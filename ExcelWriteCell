@@ -1,0 +1,16 @@
+#include <.\GUIConstantsEx.au3>
+#include <.\WindowsConstants.au3>
+#include <.\IE.au3>
+#include <Excel.au3>
+_IEErrorHandlerRegister()
+
+Local $oExcel = _ExcelBookNew() ;Create new book, make it visible
+
+For $i = 1 To 55 ;Loop
+	_ExcelWriteCell($oExcel, $i, $i, 1) ;Write to the Cell
+Next
+
+MsgBox(0, "Exiting", "Press OK to Save File ")
+_ExcelBookSaveAs($oExcel, @MyDocumentsDir & "\Temp.xls", "xls", 0, 1) ; Now we save it into the temp directory; overwrite existing file if necessary
+;_ExcelBookClose($oExcel) ; And finally we close out
+
