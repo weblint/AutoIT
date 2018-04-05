@@ -11,13 +11,14 @@ _IEErrorHandlerRegister()
 
 ;#################################################################################################################################################
 ;04/2018
+;ToDo
 ; Dieses Script stellt die Eingangsdaten aus SAP bereit 
-;�SAP Transaktion zkdret
-;�SAP Transaktion qm11 (zu q1 und z2)
-;�SAP Transaktion qm15 (zu q1 und z2)
-;�Delta Fehlerberichte
-;�Kundenberichte, die Verzeichnis M:\07_CPQ_Alle\CQM-CM\02_CM\04_CM-IE_CIS\BERICHTE\Kundenberichte\* abgelegt sind.
-;�Lieferantenberichte, die im Verzeichnis "J:\Austausch\Lief_berichte\" abgelegt sind und die 31er Auftragsnummer zum Vorgang im Namen haben.
+;SAP Transaktion zkdret
+;SAP Transaktion qm11 (zu q1 und z2)
+;SAP Transaktion qm15 (zu q1 und z2)
+;Delta Fehlerberichte
+;Kundenberichte, die Verzeichnis M:\07_CPQ_Alle\CQM-CM\02_CM\04_CM-IE_CIS\BERICHTE\Kundenberichte\* abgelegt sind.
+;Lieferantenberichte, die im Verzeichnis "J:\Austausch\Lief_berichte\" abgelegt sind und die 31er Auftragsnummer zum Vorgang im Namen haben.
 
 ;ZKDRET
 ;Ben�tigte Felder:
@@ -156,7 +157,7 @@ Func CreateStart()
 		sleep(200)
 		
 		$j=$j+1
-		;Ausf�hren
+		;Ausführen
 		_SAPVKeysSend("F8")	
 	Else
 		MsgBox(0,"Achtung","falsche transaktion")
@@ -222,7 +223,7 @@ Func CreateQM11()
 				
 		$MyBox= MsgBox(1,"Achtung","Datengenerierung beginnt...Dauert etwas")
 		if $MyBox==1 then
-			;Ausf�hren
+			;Ausführen
 			_SAPVKeysSend("F8")	
 			sleep(200)	
 		EndIf
@@ -299,7 +300,7 @@ sleep(200)
 		sleep(500)
 		$MyBox= MsgBox(1,"Achtung","Datengenerierung beginnt...Dauert etwas")
 		if $MyBox==1 then
-			;Ausf�hren
+			;Ausführen
 			_SAPVKeysSend("F8")	
 			sleep(200)	
 		EndIf
