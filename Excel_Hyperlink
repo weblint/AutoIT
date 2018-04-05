@@ -1,0 +1,414 @@
+#region ;**** Directives created by AutoIt3Wrapper_GUI ****
+#AutoIt3Wrapper_Compression=4
+#AutoIt3Wrapper_UseX64=n
+#endregion ;**** Directives created by AutoIt3Wrapper_GUI ****
+#AutoIt3Wrapper_Run_Debug_Mode=N
+#AutoIt3Wrapper_AU3Check_Parameters=-d -w 1 -w 2 -w 3 -w 4 -w 5 -w 6
+
+; #include <RecFileListToArray.au3>
+#include <File.au3>
+#include <ButtonConstants.au3>
+#include <ComboConstants.au3>
+#include <EditConstants.au3>
+#include <GUIConstantsEx.au3>
+#include <WindowsConstants.au3>
+#include <GuiListView.au3>
+#include <Word.au3>
+#include <Excel.au3>
+
+Global $szDrive, $szDir, $szFName, $szExt, $iFileNumber, $iResult, $bOnlyShow
+Global $iCount, $nMsg, $sTemp, $aProperties, $bChange, $sTempFileName, $oApp, $aFiles
+Global $sStartDir = @ScriptDir ; @DesktopDir                    ; Directory to start searching
+Global $iSearchSubDir = 0                           ; Don't search subdirectories
+Global $sFiles2Search                               ; Files to search for
+Global $sString2Search = "\IK\"                     ; String to be searched and replaced
+Global $sString2Replace = "\IT\"                    ; String to replace with
+Global $iReplaceOnce = 1                            ; Only replace the first occurrence. 1 = yes, 0 = no, replace all
+Global $sBackupPath = "C:\Temp\ShortcutModify\"     ; Path of the backup location
+Global $sLogFile = "C:\Temp\ShortcutModify\ShortcutModify.log"          ; filename of the log file
+Global $sTitle = "Ändern von Shortcuts/Hyperlinks" ; Titel für MsgBox etc.
+
+_DisplayHelp()
+
+#region ### START Koda GUI section ### Form=
+Global $Form1   = GUICreate($sTitle, 506, 384, 192, 124)
+Global $Group1  = GUICtrlCreateGroup("Shortcuts ändern", 8, 2, 489, 129)
+                  GUICtrlCreateLabel("Verzeichnis:", 24, 24, 61, 17)
+Global $Input1  = GUICtrlCreateInput($sStartDir, 128, 22, 305, 21)
+Global $Button1 = GUICtrlCreateButton("...", 448, 20, 33, 25, $WS_GROUP)
+                  GUICtrlCreateLabel("Typ:", 16, 56, 54, 17)
+Global $Combo0  = GUICtrlCreateCombo("LNK", 70, 54, 59, 25, $CBS_DROPDOWNLIST)
+                  GUICtrlSetData(-1, "DOC*")
+                  GUICtrlSetData(-1, "PPT*")
+                  GUICtrlSetData(-1, "XLS*")
+                  GUICtrlCreateLabel("Suche:", 146, 56, 38, 17)
+Global $Input2  = GUICtrlCreateInput($sString2Search, 187, 54, 100, 21)
+                  GUICtrlCreateLabel("Ersetze durch:", 297, 56, 72, 17)
+Global $Input3  = GUICtrlCreateInput($sString2Replace, 372, 54, 100, 21)
+                  GUICtrlCreateLabel("Recursion:", 16, 93, 54, 17)
+Global $Combo3  = GUICtrlCreateCombo($iSearchSubDir, 71, 91, 59, 25, $CBS_DROPDOWNLIST)
+                  GUICtrlSetData(-1, "1")
+                  GUICtrlCreateLabel("0 = Nur angegebenes Verzeichnis," & @CRLF & "1 = Angegebenes Verzeichnis und alle Unterverzeichnisse", 146, 93, 310, 35)
+Global $Group2  = GUICtrlCreateGroup("Optionen", 8, 141, 489, 89)
+                  GUICtrlCreateLabel("Wie oft ersetzen:", 24, 165, 84, 17)
+                  GUICtrlCreateLabel("0 = Alle ersetzen, 1 = 1x ersetzen", 192, 165, 210, 17)
+Global $Combo1  = GUICtrlCreateCombo("1", 128, 163, 49, 25, $CBS_DROPDOWNLIST)
+                  GUICtrlSetData(-1, "0")
+                  GUICtrlCreateLabel("Links nur anzeigen?", 24, 197, 98, 17)
+Global $Combo2  = GUICtrlCreateCombo("Nein", 128, 195, 49, 25, $CBS_DROPDOWNLIST)
+                  GUICtrlSetData(-1, "Ja")
+Global $Group3  = GUICtrlCreateGroup("Sicherung und Protokollierung", 8, 242, 489, 92)
+                  GUICtrlCreateLabel("BackupVerzeichnis:", 24, 264, 98, 17)
+Global $Input5  = GUICtrlCreateInput($sBackupPath, 128, 262, 305, 21, BitOR($ES_LEFT, $ES_AUTOHSCROLL, $ES_READONLY))
+                  GUICtrlSetBkColor($Input5, 0xC4C4C4)
+                  GUICtrlCreateLabel("Log-Datei:", 24, 301, 53, 17)
+Global $Input6  = GUICtrlCreateInput($sLogFile, 128, 299, 305, 21, BitOr($ES_LEFT, $ES_AUTOHSCROLL, $ES_READONLY))
+                  GUICtrlSetBkColor($Input6, 0xC4C4C4)
+Global $Button3 = GUICtrlCreateButton("Start", 8, 349, 97, 25, $WS_GROUP)
+Global $Button4 = GUICtrlCreateButton("Exit", 400, 349, 97, 25, $WS_GROUP)
+Global $Button5 = GUICtrlCreateButton("Hilfe", 141, 349, 97, 25, $WS_GROUP)
+Global $Button6 = GUICtrlCreateButton("Protokoll", 269, 349, 97, 25, $WS_GROUP)
+GUISetState(@SW_SHOW)
+#endregion ### END Koda GUI section ###
+
+While 1
+    $nMsg = GUIGetMsg()
+    Switch $nMsg
+        Case $GUI_EVENT_CLOSE, $Button4
+            Exit
+        Case $Button1
+            $sTemp = GUICtrlRead($Input1)
+            $sTemp = FileSelectFolder("Bitte zu verarbeitendes Verzeichnis auswählen", "", 2, $sTemp, $Form1)
+            If @error = 0 Then GUICtrlSetData($Input1, $sTemp)
+        Case $Button3
+            If _CheckInput() = 0 Then
+                If _ProcessInput() = 1 Then _ShowLog()
+            EndIf
+        Case $Button5
+            _DisplayHelp()
+        Case $Button6
+            If _CheckInput() = 0 Then _ShowLog()
+        EndSwitch
+WEnd
+
+Func _CheckInput()
+
+    $sStartDir = GUICtrlRead($Input1)
+    If Not FileExists($sStartDir) Then Return MsgBox(16, $sTitle, "Eingabe in Feld 'Verzeichnis:' ist ungültig!")
+    $sString2Search = GUICtrlRead($Input2)
+    If $sString2Search = "" Then Return MsgBox(16, $sTitle, "Feld 'Suche:' ist leer!")
+    $sString2Replace = GUICtrlRead($Input3)
+    If $sString2Replace = "" Then Return MsgBox(16, $sTitle, "Feld 'Ersetze durch:' ist leer!")
+    $sFiles2Search = GUICtrlRead($Combo0)
+    $iReplaceOnce = Number(GUICtrlRead($Combo1))
+    $bOnlyShow = GUICtrlRead($Combo2)
+    If $bOnlyShow = "Ja" Then
+        $bOnlyShow = True
+    Else
+        $bOnlyShow = False
+    EndIf
+    $iSearchSubDir = Number(GUICtrlRead($Combo3))
+    If Not FileExists($sBackupPath) Then
+        If DirCreate($sBackupPath) <> 1 Then Return MsgBox(16, $sTitle, "Verzeichnis " & $sBackupPath & " konnte nicht angelegt werden!")
+    EndIf
+;   $sLogFile = $sBackupPath & $sLogFile
+    Return 0
+
+EndFunc   ;==>_CheckInput
+
+Func _ProcessInput()
+
+    ; $aFiles = _RecFileListToArray($sStartDir, "*." & $sFiles2Search, 1, $iSearchSubDir, 0, 2)
+    $aFiles = _FileListToArrayRec($sStartDir, "*." & $sFiles2Search, $FLTAR_FILES, $iSearchSubDir, $FLTAR_NOSORT, $FLTAR_FULLPATH)
+    _arraydisplay($aFiles)
+    If @error <> 0 Then
+        If @extended = 9 Then
+            MsgBox(16, $sTitle, "Keine Dateien vom angegebenen Typ im angegebenen Verzeichnis gefunden!")
+        Else
+            MsgBox(16, $sTitle, "Sonstiger Fehler in Function '_RecFileListToArray'. @Error: " & @error & ", @Extended: " & @extended)
+        EndIf
+        Return 0
+    EndIf
+    ProgressOn("Verarbeite Dateien", "")
+    _FileWriteLog($sLogFile, "I --------------------------------------------------------------------------------------------------------")
+    _FileWriteLog($sLogFile, "I Parameter:")
+    _FileWriteLog($sLogFile, "I   $sStartDir       = " & $sStartDir)
+    _FileWriteLog($sLogFile, "I   $sFiles2Search   = " & $sFiles2Search)
+    _FileWriteLog($sLogFile, "I   $sString2Search  = " & $sString2Search)
+    _FileWriteLog($sLogFile, "I   $sString2Replace = " & $sString2Replace)
+    _FileWriteLog($sLogFile, "I   $iReplaceOnce    = " & $iReplaceOnce)
+    _FileWriteLog($sLogFile, "I   $bOnlyShow       = " & $bOnlyShow)
+    _FileWriteLog($sLogFile, "I   $sBackupPath     = " & $sBackupPath)
+    _FileWriteLog($sLogFile, "I " & $aFiles[0] & " Datei(en) gefunden.")
+    $iCount = 0
+    If $sFiles2Search = "doc*" Then $oApp = _Word_Create(False)
+    If $sFiles2Search = "ppt*" Then $oApp = ObjCreate("PowerPoint.Application")
+    If $sFiles2Search = "xls*" Then $oApp = _Excel_Open(False)
+    For $iIndex = 1 To $aFiles[0]
+        _PathSplit($aFiles[$iIndex], $szDrive, $szDir, $szFName, $szExt)
+        ProgressSet($iIndex * 100 / $aFiles[0], $szFName & $szExt, "Datei " & $iIndex & " von " & $aFiles[0])
+        If $sFiles2Search = "lnk"  Then $iResult = _ProcessLnk($aFiles[$iIndex], $szFName, $szExt)
+        If $sFiles2Search = "doc*" Then $iResult = _ProcessDoc($aFiles[$iIndex], $szFName, $szExt)
+        If $sFiles2Search = "ppt*" Then $iResult = _ProcessPpt($aFiles[$iIndex], $szFName, $szExt)
+        If $sFiles2Search = "xls*" Then $iResult = _ProcessXls($aFiles[$iIndex], $szFName, $szExt)
+        If $iResult = 0 Then ExitLoop
+        If $iResult = -1 Then $iCount += 1
+    Next
+    If $sFiles2Search = "doc*" Then _Word_Quit($oApp, $WdDoNotSaveChanges)
+    If $sFiles2Search = "ppt*" Then $oApp.Quit()
+    If $sFiles2Search = "xls*" Then _Excel_Close($oApp, False)
+    _FileWriteLog($sLogFile, "I " & $iCount & " Datei(en) geändert.")
+    ProgressOff()
+    Return 1
+
+EndFunc   ;==>_ProcessInput
+
+Func _DisplayListView(ByRef $aFiles)
+
+    Local $hListView, $szDrive, $szDir, $szFName, $szExt, $Button1, $Button2, $Button3, $Button4, $hGUI
+    $hGUI = GUICreate($sTitle & " - zu verarbeitende Dateien", 601, 669, 192, 125, -1, -1, $Form1)
+    $hListView = GUICtrlCreateListView("", 2, 2, 594, 624)
+    _GUICtrlListView_SetExtendedListViewStyle($hListView, $LVS_EX_CHECKBOXES)
+    $Button1 = GUICtrlCreateButton("Alle markieren", 8, 635, 121, 25, $WS_GROUP)
+    $Button2 = GUICtrlCreateButton("Alle Markierungen löschen", 144, 635, 153, 25, $WS_GROUP)
+    $Button3 = GUICtrlCreateButton("OK", 424, 635, 73, 25, $WS_GROUP)
+    $Button4 = GUICtrlCreateButton("Exit", 512, 635, 81, 25, $WS_GROUP)
+    _GUICtrlListView_InsertColumn($hListView, 0, "Datei", 394)
+    For $iIndex = 1 To $aFiles[0]
+        _PathSplit($aFiles[$iIndex], $szDrive, $szDir, $szFName, $szExt)
+        _GUICtrlListView_AddItem($hListView, $szFName & $szExt)
+    Next
+    _GUICtrlListView_SetItemChecked($hListView, -1, True)
+    GUISetState()
+    While 1
+        $nMsg = GUIGetMsg()
+        Switch $nMsg
+            Case $Button1
+                _GUICtrlListView_SetItemChecked($hListView, -1, True)
+            Case $Button2
+                _GUICtrlListView_SetItemChecked($hListView, -1, False)
+            Case $Button3
+                ; Nicht markierte Einträge aus der Tabelle löschen
+                For $iIndex = $aFiles[0] To 1 Step -1
+                    If _GUICtrlListView_GetItemChecked($hListView, $iIndex - 1) = False Then _ArrayDelete($aFiles, $iIndex)
+                Next
+                $aFiles[0] = UBound($aFiles, 1) - 1
+                GUIDelete($hGUI)
+                Return 1
+            Case $Button4, $GUI_EVENT_CLOSE
+                GUIDelete($hGUI)
+                Return 0
+        EndSwitch
+    WEnd
+
+EndFunc   ;==>_DisplayListView
+
+Func _Createbackup($sFile, $sFName, $sExt)
+
+    Local $iResult, $iFileNumber = 0, $sTempFileName
+    $sTempFileName = $sBackupPath & $sFName & $sExt
+    If FileExists($sTempFileName) Then ; Make backup file unique. append _n if backup file already exists
+        Do
+            $iFileNumber += 1
+            $sTempFileName = $sBackupPath & $sFName & "_" & $iFileNumber & $sExt
+        Until Not FileExists($sTempFileName)
+    EndIf
+    $iResult = FileCopy($sFile, $sTempFileName, 8) ; Create backup copy
+    If $iResult = 0 Then
+        Exit _FileWriteLog($sLogFile, "E Fehler " & @error & " beim Erstellen der Sicherungskopie " & $sTempFileName & " von Datei " & $sFile)
+    Else
+        _FileWriteLog($sLogFile, "I Sicherungskopie " & $sTempFileName & " von Datei " & $sFile & " erstellt")
+    EndIf
+
+EndFunc   ;==>_Createbackup
+
+Func _ProcessLnk($sFile, $szFName, $szExt)
+
+    Local $bChange = False
+    Local $aProperties = FileGetShortcut($sFile) ; Get shortcut properties
+    If @error Then
+        _FileWriteLog($sLogFile, "E Fehler " & @error & " beim Zugriff auf Shortcut " & $sFile)
+        Return SetError(1, 0, 0)
+    EndIf
+    If $bOnlyShow Then
+        _FileWriteLog($sLogFile, "I Datei " & $sFile)
+        _FileWriteLog($sLogFile, "I   Ziel:          " & $aProperties[0])
+        _FileWriteLog($sLogFile, "I   Ausführen in:  " & $aProperties[1])
+    Else
+        If StringInStr($aProperties[0], $sString2Search) > 0 Then ; Change string in shortcut path
+            $aProperties[0] = StringReplace($aProperties[0], $sString2Search, $sString2Replace, $iReplaceOnce)
+            $bChange = True
+        EndIf
+        If StringInStr($aProperties[1], $sString2Search) > 0 Then ; Change string in workingdirectory path
+            $aProperties[1] = StringReplace($aProperties[1], $sString2Search, $sString2Replace, $iReplaceOnce)
+            $bChange = True
+        EndIf
+        If $bChange = True Then ; If replace occurred
+            _CreateBackup($sFile, $szFName, $szExt)
+            FileCreateShortcut($aProperties[0], $sFile, $aProperties[1], $aProperties[2], $aProperties[3], $aProperties[4], "", $aProperties[5], $aProperties[6])
+            If @error Then
+                _FileWriteLog($sLogFile, "E Fehler " & @error & " beim Erstellen des geänderten Shortcuts " & $sFile)
+                Return SetError(2, 0, 0)
+            EndIf
+            _FileWriteLog($sLogFile, "I " & $sFile & " erfolgreich geändert.")
+            Return -1 ; - 1: Datei wurde geändert
+        EndIf
+    EndIf
+    Return 1
+
+EndFunc   ;==>_ProcessLnk
+
+Func _ProcessDoc($sFile, $szFName, $szExt)
+
+    Local $bChange = False
+    Local $oDoc = _Word_DocOpen($oApp, $sFile)
+    If @error Then
+        _FileWriteLog($sLogFile, "E Fehler " & @error & " beim Öffnen von " & $sFile)
+        Return SetError(1, 0, 0)
+    EndIf
+    Local $oHyperLinks = _Word_DocLinkGet($oDoc)
+    If @error Then
+        _FileWriteLog($sLogFile, "E Fehler " & @error & " beim Zugriff auf die Hyperlinks von " & $sFile)
+        Return SetError(2, 0, 0)
+    EndIf
+    If $bOnlyShow Then _FileWriteLog($sLogFile, "I Datei " & $sFile)
+    For $oHyperLink In $oHyperLinks
+        If $bOnlyShow Then
+            _FileWriteLog($sLogFile, "I   Address:       " & $oHyperLink.Address)
+            _FileWriteLog($sLogFile, "I   TextToDisplay: " & $oHyperLink.TextToDisplay)
+        Else
+            If StringInStr($oHyperLink.Address, $sString2Search) > 0 Then
+                $oHyperLink.Address = StringReplace($oHyperLink.Address, $sString2Search, $sString2Replace, $iReplaceOnce)
+                $bChange = True
+            EndIf
+            If StringInStr($oHyperLink.TextToDisplay, $sString2Search) > 0 Then
+                $oHyperLink.TextToDisplay = StringReplace($oHyperLink.TextToDisplay, $sString2Search, $sString2Replace, $iReplaceOnce)
+                $bChange = True
+            EndIf
+        EndIf
+    Next
+    If $bChange = True Then ; If replace occurred
+        _CreateBackup($sFile, $szFName, $szExt)
+        _Word_DocSave($oDoc)
+        If @error Then
+            _FileWriteLog($sLogFile, "E Fehler " & @error & " beim Sichern der geänderten Datei " & $sFile)
+            Return SetError(3, 0, 0)
+        EndIf
+        _FileWriteLog($sLogFile, "I " & $sFile & " erfolgreich geändert.")
+        Return -1 ; - 1: Datei wurde geändert
+    EndIf
+    _Word_DocClose($oDoc, $WdDoNotSaveChanges)
+    Return 1
+
+EndFunc   ;==>_ProcessDoc
+
+Func _ProcessPpt($sFile, $szFName, $szExt)
+
+    Local $bChange = False
+    Local $oInterface = $oApp.Presentations
+    Local $oPresentation = $oInterface.Open($sFile, False, False, False) ;  expression .Open(FileName, ReadOnly, Untitled, WithWindow)
+    MsgBox(0,""," Wait ..:")
+    If @error Then
+        _FileWriteLog($sLogFile, "E Fehler " & @error & " beim Öffnen von " & $sFile)
+        Return SetError(1, 0, 0)
+    EndIf
+    If $bOnlyShow Then _FileWriteLog($sLogFile, "I Datei " & $sFile)
+    For $oSlide In $oPresentation.Slides
+        For $oHyperLink In $oSlide.Hyperlinks
+            If $bOnlyShow Then
+                _FileWriteLog($sLogFile, "I   Address:       " & $oHyperLink.Address)
+                _FileWriteLog($sLogFile, "I   TextToDisplay: " & $oHyperLink.TextToDisplay)
+            Else
+                If StringInStr($oHyperLink.Address, $sString2Search) > 0 Then
+                    $oHyperLink.Address = StringReplace($oHyperLink.Address, $sString2Search, $sString2Replace, $iReplaceOnce)
+                    $bChange = True
+                EndIf
+                If StringInStr($oHyperLink.TextToDisplay, $sString2Search) > 0 Then
+                    $oHyperLink.TextToDisplay = StringReplace($oHyperLink.TextToDisplay, $sString2Search, $sString2Replace, $iReplaceOnce)
+                    $bChange = True
+                EndIf
+            EndIf
+        Next
+    Next
+    If $bChange = True Then ; If replace occurred
+        _CreateBackup($sFile, $szFName, $szExt)
+        $oPresentation.Save()
+        If @error Then
+            _FileWriteLog($sLogFile, "E Fehler " & @error & " beim Sichern der geänderten Datei " & $sFile)
+            Return SetError(3, 0, 0)
+        EndIf
+        $oPresentation.Close()
+        _FileWriteLog($sLogFile, "I " & $sFile & " erfolgreich geändert.")
+        Return -1 ; - 1: Datei wurde geändert
+    EndIf
+    $oPresentation.Saved = True
+    $oPresentation.Close()
+    Return 1
+
+EndFunc   ;==>_ProcessPpt
+
+; Externe Links/Referenzen in Excel über Workbook.LinkSources(xlExcelLinks) anpassen
+; https://msdn.microsoft.com/library/6466bea0-5af8-7af0-e9d7-7595133073ae%28office.15%29.aspx
+; https://msdn.microsoft.com/de-de/library/ff837968.aspx
+Func _ProcessXls($sFile, $szFName, $szExt)
+
+    Local $bChange = False
+    Local $oWorkbook = _Excel_BookOpen($oApp, $sFile)
+    If @error Then
+        _FileWriteLog($sLogFile, "E Fehler " & @error & " beim Öffnen von " & $sFile)
+        Return SetError(1, 0, 0)
+    EndIf
+    ;Local $aSheets = _Excel_SheetList($oWorkbook)
+    If @error Then
+        _FileWriteLog($sLogFile, "E Fehler " & @error & " beim Zugriff auf die Worksheets von " & $sFile)
+        Return SetError(2, 0, 0)
+    EndIf
+    If $bOnlyShow Then _FileWriteLog($sLogFile, "I Datei " & $sFile)
+    For $iIndex = 1 To $oWorkbook.Sheets.Count
+        ;_ExcelSheetActivate($oApp, $iIndex)
+        For $oHyperLink In $oWorkbook.Sheets.Item($iIndex).HyperLinks
+            If $bOnlyShow Then
+                _FileWriteLog($sLogFile, "I   Address:       " & $oHyperLink.Address)
+                _FileWriteLog($sLogFile, "I   TextToDisplay: " & $oHyperLink.TextToDisplay)
+            Else
+                If StringInStr($oHyperLink.Address, $sString2Search) > 0 Then
+                    $oHyperLink.Address = StringReplace($oHyperLink.Address, $sString2Search, $sString2Replace, $iReplaceOnce)
+                    $bChange = True
+                EndIf
+                If StringInStr($oHyperLink.TextToDisplay, $sString2Search) > 0 Then
+                    $oHyperLink.TextToDisplay = StringReplace($oHyperLink.TextToDisplay, $sString2Search, $sString2Replace, $iReplaceOnce)
+                    $bChange = True
+                EndIf
+            EndIf
+        Next
+    Next
+    If $bChange = True Then ; If replace occurred
+        _CreateBackup($sFile, $szFName, $szExt)
+        _Excel_BookSave($oWorkbook)
+        If @error Then
+            _FileWriteLog($sLogFile, "E Fehler " & @error & " beim Sichern der geänderten Datei " & $sFile)
+            Return SetError(3, 0, 0)
+        EndIf
+        _FileWriteLog($sLogFile, "I " & $sFile & " erfolgreich geändert.")
+        _Excel_BookClose($oWorkbook)
+        Return -1 ; - 1: Datei wurde geändert
+    EndIf
+    $oWorkbook.Close(False)
+    Return 1
+
+EndFunc   ;==>_ProcessXls
+
+Func _ShowLog()
+
+    ShellExecuteWait("Notepad", $sLogFile)
+
+EndFunc   ;==>_ShowLog
+
+Func _DisplayHelp()
+
+    MsgBox(64, $sTitle, "Dieses Programm modifiziert die in den angegebenen Dateien gefundenen Shortcuts (Verknüpfungen/Hyperlinks). " & @CRLF & _
+        "Ein einzugebender Suchstring wird einmal/beliebig oft ersetzt." & @CRLF & _
+        "Die unveränderte Datei wird vor der Änderung in einem Backup-Verzeichnis gesichert. " & @CRLF & _
+        "In diesem Verzeichnis wird auch die Log-Datei angelegt.")
+
+EndFunc   ;==>_DisplayHelp
