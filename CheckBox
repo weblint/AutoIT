@@ -1,0 +1,41 @@
+;-Begin-----------------------------------------------------------------
+
+  ;-Variables-----------------------------------------------------------
+    Dim $SAPROT, $SapGuiAuto, $application, $connection, $session
+
+
+
+  $SAPROT = ObjCreate("SapROTWr.SAPROTWrapper")
+  If Not IsObj($SAPROT) Then
+    Exit
+  EndIf
+
+  $SapGuiAuto = $SAPROT.GetROTEntry("SAPGUI")
+  If Not IsObj($SapGuiAuto) Then
+    Exit
+  EndIf
+
+  $application = $SapGuiAuto.GetScriptingEngine()
+  If Not IsObj($application) Then
+    Exit
+  EndIf
+
+  $connection = $application.Children(0)
+  If Not IsObj($connection) Then
+    Exit
+  EndIf
+
+  $session = $connection.Children(0)
+  If Not IsObj($session) Then
+    Exit
+  EndIf
+
+  $session.findById("wnd[0]/tbar[0]/okcd").text = "/nQM11"
+  
+  $session.findById("wnd[0]/usr/chkDY_OFN").selected = True
+  $session.findById("wnd[0]/usr/chkDY_RST").selected = True
+  $session.findById("wnd[0]/usr/chkDY_IAR").selected = True
+  $session.findById("wnd[0]/usr/chkDY_MAB").selected = True
+ ; $session.findById("wnd[0]").sendVKey(0)
+
+;-End-------------------------------------------------------------------
