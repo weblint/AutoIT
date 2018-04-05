@@ -1,0 +1,30 @@
+#include <Date.au3>
+
+Local $sNewDate, $firstDate, $LastDay
+Local $Year = @YEAR
+Local $Month = @MON -1 
+
+
+$sNewDate = _DateAdd('M', 1, $Year & "/" & $Month & "/" & "01")
+$sNewDate = _DateAdd('D', -1, $sNewDate)
+
+$firstDate = "01." & "0" & $Month -4+1 & "." & $Year
+$LastDay = StringRegExpReplace($sNewDate, "(\d{4})(?:/)(\d{2})(?:/)(\d{2})", "\3.\2.\1")
+
+MsgBox(4096, "Example",   $firstDate & " and " & $LastDay)
+
+ 
+$date1 = _DateAdd("d", -100, _NowCalcDate())
+;$date2 = StringFormat("%02d", _DateAdd("d", -100, _NowCalcDate()))
+$date2=StringRegExpReplace($date1, "(\d{4})(?:/)(\d{2})(?:/)(\d{2})", "\3.\2.\1") 
+ConsoleWrite($date2 & @LF)
+
+$date = StringFormat("%02d",@MDAY) &"."& @MON &"."&@YEAR  
+$data_1 = StringFormat("%02d",@MDAY) &"."& @MON &"."&@YEAR 
+$data_2 = StringFormat("%02d",@MDAY) &"."& @MON &"."&@YEAR 
+ConsoleWrite("Date: " & $date & @CRLF & "Data_1: " & $data_1 & @CRLF & "Data_2: " & $data_2 & @CRLF)
+
+ 
+; Subtract 2 weeks from today
+$sNewDate = _DateAdd( 'w',-12, _NowCalcDate())
+MsgBox( 4096, "", "Today minus 12weeks: " & StringFormat($sNewDate) )
