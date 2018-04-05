@@ -1,0 +1,44 @@
+#include <Array.au3>
+#include <File.au3>
+
+Local $filenames = _FileListToArray(@ScriptDir)
+Local $filenameA = "A.ini"
+
+For $i = 1 To $filenames[0]
+   ConsoleWrite($filenames[$i] & @CRLF)
+
+   If StringRegExp($filenames[$i], "\.ini$") == 0 Or $filenames[$i] == $filenameA Then
+      ContinueLoop
+   EndIf
+
+   Local $sectionNames = IniReadSectionNames($filenames[$i])
+
+   For $j = 1 To $sectionNames[0]
+      ConsoleWrite("adding data to section " & $sectionNames[$j] & " ..." & @CRLF)
+
+      Local $curSection = IniReadSection($filenames[$i], $sectionNames[$j])
+
+      For $k = 1 To $curSection[0][0]
+         ConsoleWrite($curSection[$k][0] & " -> " & $curSection[$k][1] & @CRLF)
+
+         If $curSection[$k][0] == "task" Then
+
+            Local $newTaskName = IniRead($filenameA, $curSection[$k][1], "name", "tttt")
+            ConsoleWrite("name -> " & $taskName & @CRLF)
+            Local $curTaskName = IniRead($filenames[$i], $sectionNames[$j], "name", "")
+
+            If $curTaskName == "" Then
+               _ArrayInsert($curSection, $k + 1, "name|" & $newTaskName, 0)
+               ;_ArrayDisplay($curSection, "")
+               IniWriteSection($filenames[$i], $sectionNames[$j], $curSection)
+            Else
+               IniWrite($filenames[$i], $sectionNames[$j], "name", $newTaskName)
+            EndIf
+
+            ExitLoop
+
+         EndIf
+
+      Next
+   Next
+Next
