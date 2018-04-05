@@ -21,13 +21,13 @@ _IEErrorHandlerRegister()
 ;Lieferantenberichte, die im Verzeichnis "J:\Austausch\Lief_berichte\" abgelegt sind und die 31er Auftragsnummer zum Vorgang im Namen haben.
 
 ;ZKDRET
-;Ben�tigte Felder:
-;Verkaufsbeleg (mit 3100* f�llen)
-;Datum, an dem der Satz hinzu (mit 01.01.2012 bis Tagesdatum f�llen)
-;Materialnummer (mit 2866743 f�llen)
-;Verkaufsbelegart (mit ZRAT f�llen)
-;Positionstyp Vertriebsbeleg (mit ZRRA f�llen)
-;Meldungsart (mit S1 f�llen)
+;Benötigte Felder:
+;Verkaufsbeleg (mit 3100* füllen)
+;Datum, an dem der Satz hinzu (mit 01.01.2012 bis Tagesdatum füllen)
+;Materialnummer (mit 2866743 füllen)
+;Verkaufsbelegart (mit ZRAT füllen)
+;Positionstyp Vertriebsbeleg (mit ZRRA füllen)
+;Meldungsart (mit S1 füllen)
 ;Ausgabeform: Tabellenkalkulation
 ;#################################################################################################################################################
 
