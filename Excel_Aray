@@ -22,30 +22,8 @@ _IEErrorHandlerRegister()
  _ArrayDisplay($aArray, "Array using Default Parameters") 
  
  
- $aArray = _ExcelReadSheetToArray($oExcel, 2) ;Starting on the 2nd Row 
- _ArrayDisplay($aArray, "Starting on the 2nd Row") 
  
  
- $aArray = _ExcelReadSheetToArray($oExcel, 1, 2) ;Starting on the 2nd Column 
- _ArrayDisplay($aArray, "Starting on the 2nd Column") 
- 
- 
- $aArray = _ExcelReadSheetToArray($oExcel, 1, 1, 5) ;Read 5 Rows 
- _ArrayDisplay($aArray, "Read 5 Rows") 
- 
- 
- $aArray = _ExcelReadSheetToArray($oExcel, 1, 1, 0, 2) ;Read 2 Columns 
- _ArrayDisplay($aArray, "Read 2 Columns") 
- 
- 
- $aArray = _ExcelReadSheetToArray($oExcel, 2, 3, 4, 5) ;Starting on the 2nd Row, 3rd Column, Read 4 Rows and 5 Columns 
- _ArrayDisplay($aArray, "Starting on the 2nd Row, 3rd Column, Read 4 Rows and 5 Columns") 
- 
- 
- $aArray = _ExcelReadSheetToArray($oExcel, 1, 1, 0, 0, True) ;Using Default Parameters, except Shifting Column (True) 
- _ArrayDisplay($aArray, "Array with Column shifting") 
- 
- 
- MsgBox($MB_SYSTEMMODAL, "Exiting", "Press OK to Save File and Exit") 
+MsgBox(0, "Exiting", "Press OK to Save File ")
 _ExcelBookSaveAs($oExcel, @MyDocumentsDir & "\Temp.xls", "xls", 0, 1) ; Now we save it into the temp directory; overwrite existing file if necessary
  _ExcelBookClose($oExcel) ; And finally we close out 
