@@ -1,0 +1,87 @@
+#include <GUIConstantsEx.au3>
+#include <WindowsConstants.au3>
+#include <EditConstants.au3>
+#include <StaticConstants.au3>
+#include <ButtonConstants.au3>
+#include <DateTimeConstants.au3>
+#include <Date.au3>
+#include <IE.au3>
+_IEErrorHandlerRegister()
+
+; Dieses Script öffnet SAP und filtert die Ergebnisse der Abfragen zusammen
+;•SAP Transaktion zkdret
+;•SAP Transaktion qm11 (zu q1 und z2)
+;•SAP Transaktion qm15 (zu q1 und z2)
+;•Delta Fehlerberichte
+;•Kundenberichte, die Verzeichnis M:\07_CPQ_Alle\CQM-CM\02_CM\04_CM-IE_CIS\BERICHTE\Kundenberichte\* abgelegt sind.
+;•Lieferantenberichte, die im Verzeichnis "J:\Austausch\Lief_berichte\" abgelegt sind und die 31er Auftragsnummer zum Vorgang im Namen haben.
+
+;ZKDRET
+;Benötigte Felder:
+;Verkaufsbeleg (mit 3100* füllen)
+;Datum, an dem der Satz hinzu (mit 01.01.2012 bis Tagesdatum füllen)
+;Materialnummer (mit 2866743 füllen)
+;Verkaufsbelegart (mit ZRAT füllen)
+;Positionstyp Vertriebsbeleg (mit ZRRA füllen)
+;Meldungsart (mit S1 füllen)
+;Ausgabeform: Tabellenkalkulation
+
+Dim $txtS1
+Dim $VKBeleg
+Dim $DatVon
+Dim $today
+Dim $MatNr, $Pos,$Meld
+
+
+#include <ButtonConstants.au3>
+#include <DateTimeConstants.au3>
+#include <EditConstants.au3>
+#include <GUIConstantsEx.au3>
+#include <StaticConstants.au3>
+#include <WindowsConstants.au3>
+#Region ### START Koda GUI section ### Form=
+$Form1_1 = GUICreate("Detailauswertungen (halb)automatisiert erzeugen [1.0.0]", 536, 357, 908, 311)
+$Group1 = GUICtrlCreateGroup("QM11", 16, 208, 505, 65)
+$Label5 = GUICtrlCreateLabel("Datum wird automatisch", 32, 240, 335, 17)
+$CheckboxQ1 = GUICtrlCreateCheckbox("Q1/Z2", 232, 216, 54, 17)
+$ButtnQM11 = GUICtrlCreateButton("Ausführen", 424, 240, 75, 25, $WS_GROUP)
+$Label10 = GUICtrlCreateLabel("Layout", 352, 216, 36, 17)
+$Input1 = GUICtrlCreateInput("/CMDB", 400, 216, 49, 21)
+GUICtrlCreateGroup("", -99, -99, 1, 1)
+$Group2 = GUICtrlCreateGroup("ZKDRET", 16, 0, 505, 201)
+$VK_Beleg = GUICtrlCreateInput("3100000000", 160, 135, 121, 21)
+$Label1 = GUICtrlCreateLabel("VK Beleg", 104, 136, 48, 17)
+$Datum_von = GUICtrlCreateInput("01.02.2018", 160, 167, 121, 21)
+$Label2 = GUICtrlCreateLabel("Datum von", 96, 168, 56, 17)
+$Bis = GUICtrlCreateLabel("Bis", 291, 136, 18, 17)
+$Datum_bis = GUICtrlCreateDate("2018/04/05 07:11:17", 322, 168, 186, 21)
+$MatNr = GUICtrlCreateInput("", 160, 48, 121, 21)
+$Label3 = GUICtrlCreateLabel("Materialnummer", 74, 48, 78, 17)
+$Label6 = GUICtrlCreateLabel("Meldungsnummer", 65, 16, 87, 17)
+$ServiceNr = GUICtrlCreateInput("", 160, 16, 121, 21)
+$Ausfuehren = GUICtrlCreateButton("Ausführen", 408, 56, 91, 25, $WS_GROUP)
+$Beenden = GUICtrlCreateButton("Beenden", 408, 88, 91, 25, $WS_GROUP)
+$VK = GUICtrlCreateInput("3200000000", 322, 136, 121, 21)
+$Label7 = GUICtrlCreateLabel("Bis", 291, 169, 18, 17)
+$Konto_Kunde = GUICtrlCreateInput("*", 160, 72, 121, 21)
+$Label8 = GUICtrlCreateLabel("Kontonummer des Kunden", 23, 72, 129, 17)
+$BestN = GUICtrlCreateInput("", 160, 104, 121, 21)
+$Label9 = GUICtrlCreateLabel("Bestellnummer d. Kunden", 28, 104, 124, 17)
+$SAP_back = GUICtrlCreateButton("SAP:Zurück", 408, 24, 91, 25, $WS_GROUP)
+GUICtrlCreateGroup("", -99, -99, 1, 1)
+$Group3 = GUICtrlCreateGroup("QM15", 16, 280, 505, 65)
+$Checkbox1 = GUICtrlCreateCheckbox("Q1/Z2", 240, 288, 97, 17)
+$ButtonQM15 = GUICtrlCreateButton("Ausführen", 424, 304, 75, 25, $WS_GROUP)
+$Label4 = GUICtrlCreateLabel("Datum wird automatisch", 32, 312, 335, 17)
+GUICtrlCreateGroup("", -99, -99, 1, 1)
+GUISetState(@SW_SHOW)
+#EndRegion ### END Koda GUI section ###
+
+While 1
+	$nMsg = GUIGetMsg()
+	Switch $nMsg
+		Case $GUI_EVENT_CLOSE
+			Exit
+
+	EndSwitch
+WEnd
