@@ -1,0 +1,408 @@
+#include <.\include\GUIConstantsEx.au3>
+#include <.\include\WindowsConstants.au3>
+#include <.\include\SAP.au3>
+#include <.\include\EditConstants.au3>
+#include <.\include\StaticConstants.au3>
+#include <.\include\ButtonConstants.au3>
+#include <.\include\DateTimeConstants.au3>
+#include <.\include\Date.au3>
+#include <.\include\IE.au3>
+_IEErrorHandlerRegister()
+
+;#################################################################################################################################################
+;04/2018
+; Dieses Script stellt die Eingangsdaten aus SAP bereit 
+;�SAP Transaktion zkdret
+;�SAP Transaktion qm11 (zu q1 und z2)
+;�SAP Transaktion qm15 (zu q1 und z2)
+;�Delta Fehlerberichte
+;�Kundenberichte, die Verzeichnis M:\07_CPQ_Alle\CQM-CM\02_CM\04_CM-IE_CIS\BERICHTE\Kundenberichte\* abgelegt sind.
+;�Lieferantenberichte, die im Verzeichnis "J:\Austausch\Lief_berichte\" abgelegt sind und die 31er Auftragsnummer zum Vorgang im Namen haben.
+
+;ZKDRET
+;Ben�tigte Felder:
+;Verkaufsbeleg (mit 3100* f�llen)
+;Datum, an dem der Satz hinzu (mit 01.01.2012 bis Tagesdatum f�llen)
+;Materialnummer (mit 2866743 f�llen)
+;Verkaufsbelegart (mit ZRAT f�llen)
+;Positionstyp Vertriebsbeleg (mit ZRRA f�llen)
+;Meldungsart (mit S1 f�llen)
+;Ausgabeform: Tabellenkalkulation
+;#################################################################################################################################################
+
+Dim $txtS1
+Dim $VKBeleg
+Dim $DatVon
+Dim $today
+Dim $MatNr, $Pos,$Meld
+
+
+#Region ### START Koda GUI section ### Form=
+$Form1_1 = GUICreate("Detailauswertungen (halb)automatisiert erzeugen [1.0.0]", 536, 357, 908, 311)
+$Group1 = GUICtrlCreateGroup("QM11", 16, 208, 505, 65)
+$Label5 = GUICtrlCreateLabel("Datum wird automatisch eingefügt", 32, 240, 335, 17)
+$CheckboxQ1 = GUICtrlCreateCheckbox("Q1/Z2", 232, 216, 54, 17)
+$ButtnQM11 = GUICtrlCreateButton("Ausführen", 424, 240, 75, 25, $WS_GROUP)
+$Label10 = GUICtrlCreateLabel("Layout", 352, 216, 36, 17)
+$Input1 = GUICtrlCreateInput("/CMDB", 400, 216, 49, 21)
+GUICtrlCreateGroup("", -99, -99, 1, 1)
+$Group2 = GUICtrlCreateGroup("ZKDRET", 16, 0, 505, 201)
+$VK_Beleg = GUICtrlCreateInput("3100000000", 160, 135, 121, 21)
+$Label1 = GUICtrlCreateLabel("VK Beleg", 104, 136, 48, 17)
+$Datum_von = GUICtrlCreateInput("01.02.2018", 160, 167, 121, 21)
+$Label2 = GUICtrlCreateLabel("Datum von", 96, 168, 56, 17)
+$Bis = GUICtrlCreateLabel("Bis", 291, 136, 18, 17)
+$Datum_bis = GUICtrlCreateDate("2018/04/05 07:11:17", 322, 168, 186, 21)
+$MatNr = GUICtrlCreateInput("", 160, 48, 121, 21)
+$Label3 = GUICtrlCreateLabel("Materialnummer", 74, 48, 78, 17)
+$Label6 = GUICtrlCreateLabel("Meldungsnummer", 65, 16, 87, 17)
+$ServiceNr = GUICtrlCreateInput("", 160, 16, 121, 21)
+$Ausfuehren = GUICtrlCreateButton("Ausführen", 408, 56, 91, 25, $WS_GROUP)
+$Beenden = GUICtrlCreateButton("Beenden", 408, 88, 91, 25, $WS_GROUP)
+$VK = GUICtrlCreateInput("3200000000", 322, 136, 121, 21)
+$Label7 = GUICtrlCreateLabel("Bis", 291, 169, 18, 17)
+$Konto_Kunde = GUICtrlCreateInput("*", 160, 72, 121, 21)
+$Label8 = GUICtrlCreateLabel("Kontonummer des Kunden", 23, 72, 129, 17)
+$BestN = GUICtrlCreateInput("", 160, 104, 121, 21)
+$Label9 = GUICtrlCreateLabel("Bestellnummer d. Kunden", 28, 104, 124, 17)
+$SAP_back = GUICtrlCreateButton("SAP:Zurück", 408, 24, 91, 25, $WS_GROUP)
+GUICtrlCreateGroup("", -99, -99, 1, 1)
+$Group3 = GUICtrlCreateGroup("QM15", 16, 280, 505, 65)
+$Checkbox1 = GUICtrlCreateCheckbox("Q1/Z2", 240, 288, 97, 17)
+$ButtonQM15 = GUICtrlCreateButton("Ausführen", 424, 304, 75, 25, $WS_GROUP)
+$Label4 = GUICtrlCreateLabel("Datum wird automatisch eingefügt", 32, 312, 335, 17)
+GUICtrlCreateGroup("", -99, -99, 1, 1)
+GUISetState(@SW_SHOW)
+#EndRegion ### END Koda GUI section ###
+
+
+ ;Tagesdatum minus 100 Tage berechnen
+ $date1 = _DateAdd("d", -100, _NowCalcDate())
+ $date2=StringRegExpReplace($date1, "(\d{4})(?:/)(\d{2})(?:/)(\d{2})", "\3.\2.\1") 
+ GUICtrlSetData($Datum_von,$date2) ;aktuelles Datum minus 100 Tage in das Inputfeld schreiben
+ 
+ $j1=0
+ $j2=0
+ $j=1
+ 
+While 1
+		$nMsg = GUIGetMsg()
+		Switch $nMsg
+		
+        Case $GUI_EVENT_CLOSE
+			Exit
+			
+		Case $Ausfuehren
+			_SAPSessAttach("SAP Easy Access")
+			MsgBox(0,"Achtung","Das Programm wird sehr lange laufen!!")
+			CreateStart()
+		
+		case $ButtnQM11
+			_SAPSessAttach("SAP Easy Access")
+			CreateQM11()
+		
+		case $ButtonQM15
+			_SAPSessAttach("SAP Easy Access")
+			CreateQM15()		
+				
+		Case $Beenden
+				ExitLoop
+		
+		Case $SAP_back
+				SAPback()
+		
+	EndSwitch
+	GUIDelete(@SW_SHOW)
+WEnd
+
+Func CreateStart()
+	_SAPSessCreate("ZKDRET")
+	_SAPVKeysSend("Enter")
+	_SAPWinClose("SAP Easy Access")
+	sleep(200)
+	
+	if $j> 3 Then
+		MsgBox (0,"Alert","Es sind mehr als 3 SAP-Sessions offen. Programm wird beendet") 
+		$win_title="Kundenretouren"
+		_SAPWinClose($win_title)
+	EndIf
+	
+	
+		
+	if _SAPWinExists("Kundenretouren") Then
+		 $S1=GUICtrlRead($ServiceNr)
+		_SAPObjValueSet("usr/ctxtSP$00001-LOW",$S1)
+		sleep(200)
+		$BestNr=GUICtrlRead($BestN)
+		_SAPObjValueSet("usr/ctxtSP$00006-LOW",$BestNr)
+		sleep(200)
+		$VK_B=GUICtrlRead($VK_Beleg)
+		_SAPObjValueSet("usr/ctxtSP$00003-LOW",$VK_B)
+		sleep(200)
+		$VK_=GUICtrlRead($VK)
+		_SAPObjValueSet("usr/ctxtSP$00003-HIGH",$VK_)
+		sleep(200)
+		$Dat_von=GUICtrlRead($Datum_von)
+		_SAPObjValueSet("usr/ctxtSP$00008-LOW",$date2)
+		sleep(200)
+		$Dat_bis=GUICtrlRead($Datum_bis)
+		_SAPObjValueSet("usr/ctxtSP$00008-HIGH",$Dat_bis)
+		sleep(200)
+		$Mat_=GUICtrlRead($MatNr)
+		_SAPObjValueSet("usr/ctxtSP$00004-LOW",$Mat_)
+		sleep(200)
+		$Kto=GUICtrlRead($Konto_Kunde)
+		_SAPObjValueSet("usr/ctxtSP$00006-LOW",$Kto)
+		sleep(200)
+		
+		$j=$j+1
+		;Ausf�hren
+		_SAPVKeysSend("F8")	
+	Else
+		MsgBox(0,"Achtung","falsche transaktion")
+			_SAPVKeysSend("F8")
+			$GUI_EVENT_CLOSE
+		EndIf
+sleep (200)
+	_SAPWinClose("ZKDRET")
+	_SAPWinClose("SAP Easy Access")
+EndFunc
+
+Func CreateQM11()
+	$j1=0
+	$j2=0
+	_SAPSessCreate("QM11")
+	_SAPVKeysSend("Enter")
+	_SAPWinClose("SAP Easy Access")	
+	
+	sleep(200)
+	if _SAPWinExists("Liste Qualit�tsmeldungen anzeigen: Selektion Meldungen") Then
+		Local $sNewDate, $firstDate, $firstDate_, $LastDay
+		Local $Year = @YEAR
+		Local $Month = @MON -1
+
+		$sNewDate = _DateAdd('M', 1, $Year & "/" & $Month & "/" & "01")
+		$sNewDate = _DateAdd('D', -1, $sNewDate)
+
+		$firstDate = "01." & "0" & $Month -$Month +1 & "." & $Year
+		$firstDate_ = "01." & "0" & $Month  +1 & "." & $Year
+		$Schem=GUICtrlRead($Input1)
+		_SAPObjValueSet("usr/ctxtVARIANT",$Schem) ;Layout setzen
+		sleep(200)
+		
+		_SAPObjValueSet("usr/ctxtQMDAT-LOW",$firstDate);Meldungsdatum
+		sleep(200)
+		
+		$date = @MDAY & "." & @MON & "." & @YEAR
+		_SAPObjValueSet("usr/ctxtQMDAT-HIGH",$date)
+		sleep(200)
+		$sel = GUICtrlRead ($CheckboxQ1)
+		if ($sel) = 1 Then
+			$MyBox= MsgBox(1,"","Meldungsart Q1 wird gesetzt")
+			if $MyBox == 1 then
+				$Meldart1="Q1"
+				_SAPObjValueSet("usr/ctxtQMART-LOW",$Meldart1);Meldungsart
+				sleep(200)
+			Else
+				CreateQM11()
+			EndIf
+		Else
+			$MyBox= MsgBox(1,"","Meldungsart Z2 wird gesetzt")
+			if $MyBox ==1 then
+				$Meldart1="Z2"
+				_SAPObjValueSet("usr/ctxtQMART-LOW",$Meldart1)
+				sleep(200)
+			Else
+				CreateQM11()
+			EndIf
+		Endif
+		SetChkBox() ;Checkboxen setzen
+		sleep(500)
+		
+				
+		$MyBox= MsgBox(1,"Achtung","Datengenerierung beginnt...Dauert etwas")
+		if $MyBox==1 then
+			;Ausf�hren
+			_SAPVKeysSend("F8")	
+			sleep(200)	
+		EndIf
+		if $MyBox==2 Then
+			$MyBox= MsgBox(0,"Achtung","Programm wird abgebrochen")
+			$j1=0
+			$j2=0
+			Exit
+		endif
+	Else	
+		_SAPVKeysSend("F8")
+		$GUI_EVENT_CLOSE		
+		MsgBox(0,"Achtung","Falsches Fenster")
+	EndIf
+sleep (200)
+				
+_SAPWinClose("QM11")
+_SAPWinClose("SAP Easy Access")
+
+EndFunc
+
+Func CreateQM15()
+	$j1=0
+	$j2=0
+	_SAPSessCreate("QM15")
+	_SAPVKeysSend("Enter")
+	_SAPWinClose("SAP Easy Access")	
+
+sleep(200)
+	if _SAPWinExists("Liste Positionen anzeigen: Selektion Meldungen") Then
+		Local $sNewDate, $firstDate, $firstDate_, $LastDay
+		Local $Year = @YEAR
+		Local $Month = @MON -1
+		
+		$sNewDate = _DateAdd('M', 1, $Year & "/" & $Month & "/" & "01")
+		$sNewDate = _DateAdd('D', -1, $sNewDate)
+
+		$firstDate = "01." & "0" & $Month -$Month +1 & "." & $Year
+		$firstDate_ = "01." & "0" & $Month  +1 & "." & $Year
+		
+		$Schem=GUICtrlRead($Input1)
+		
+		_SAPObjValueSet("usr/ctxtVARIANT",$Schem)
+		sleep(200)
+		_SAPObjValueSet("usr/ctxtQMDAT-LOW",$firstDate)
+		sleep(200)
+		$date = @MDAY & "." & @MON & "." & @YEAR
+		_SAPObjValueSet("usr/ctxtQMDAT-HIGH",$date)
+		sleep(200)
+		$sel_ = GUICtrlRead ($Checkbox1)
+		
+		if ($sel_) == 1 Then
+			$MyBox= MsgBox(1,"Setzen der Meldungsart","Meldungsart Q1 wird gesetzt")
+			if $MyBox == 1 then
+				$Meldart1="Q1"
+				_SAPObjValueSet("usr/ctxtQMART-LOW",$Meldart1)
+				sleep(200)
+				$j1=1
+			Else
+				$j1=0
+				CreateQM15()
+			EndIf
+		Else
+			$MyBox= MsgBox(1,"Setzen der Meldungsart","Meldungsart Z2 wird gesetzt")
+			if $MyBox ==1 then
+				$Meldart1="Z2"
+				_SAPObjValueSet("usr/ctxtQMART-LOW",$Meldart1)
+				sleep(200)
+			Else
+				CreateQM15()
+			EndIf
+		Endif
+		SetChkBoxQM15() ;Checkboxen setzen
+		sleep(500)
+		$MyBox= MsgBox(1,"Achtung","Datengenerierung beginnt...Dauert etwas")
+		if $MyBox==1 then
+			;Ausf�hren
+			_SAPVKeysSend("F8")	
+			sleep(200)	
+		EndIf
+		if $MyBox==2 Then
+			$MyBox= MsgBox(0,"Achtung","Programm wird abgebrochen")
+			Exit
+		endif
+	Else	
+		_SAPVKeysSend("F8")
+		;$GUI_EVENT_CLOSE		
+		MsgBox(0,"Achtung","Falsches Fenster")
+	EndIf
+sleep (200)
+				
+_SAPWinClose("QM15")
+_SAPWinClose("SAP Easy Access")
+EndFunc
+
+Func SAPback()
+	_SAPVKeysSend("F3")
+	sleep(100)
+EndFunc
+
+func SetChkBox()
+	;-Begin-----------------------------------------------------------------
+
+  ;-Variables-----------------------------------------------------------
+  Dim $SAPROT, $SapGuiAuto, $application, $connection, $session
+
+  $SAPROT = ObjCreate("SapROTWr.SAPROTWrapper")
+  If Not IsObj($SAPROT) Then
+    Exit
+  EndIf
+
+  $SapGuiAuto = $SAPROT.GetROTEntry("SAPGUI")
+  If Not IsObj($SapGuiAuto) Then
+    Exit
+  EndIf
+
+  $application = $SapGuiAuto.GetScriptingEngine()
+  If Not IsObj($application) Then
+    Exit
+  EndIf
+
+  $connection = $application.Children(0)
+  If Not IsObj($connection) Then
+    Exit
+  EndIf
+
+  $session = $connection.Children(0)
+  If Not IsObj($session) Then
+    Exit
+  EndIf
+
+  $session.findById("wnd[0]/tbar[0]/okcd").text = "/nQM11"
+  
+  $session.findById("wnd[0]/usr/chkDY_OFN").selected = True
+  $session.findById("wnd[0]/usr/chkDY_RST").selected = True
+  $session.findById("wnd[0]/usr/chkDY_IAR").selected = True
+  $session.findById("wnd[0]/usr/chkDY_MAB").selected = True
+ ; $session.findById("wnd[0]").sendVKey(0)
+
+;-End-------------------------------------------------------------------
+EndFunc
+
+func SetChkBoxQM15()
+	;-Begin-----------------------------------------------------------------
+
+  ;-Variables-----------------------------------------------------------
+  Dim $SAPROT, $SapGuiAuto, $application, $connection, $session
+
+  $SAPROT = ObjCreate("SapROTWr.SAPROTWrapper")
+  If Not IsObj($SAPROT) Then
+    Exit
+  EndIf
+
+  $SapGuiAuto = $SAPROT.GetROTEntry("SAPGUI")
+  If Not IsObj($SapGuiAuto) Then
+    Exit
+  EndIf
+
+  $application = $SapGuiAuto.GetScriptingEngine()
+  If Not IsObj($application) Then
+    Exit
+  EndIf
+
+  $connection = $application.Children(0)
+  If Not IsObj($connection) Then
+    Exit
+  EndIf
+
+  $session = $connection.Children(0)
+  If Not IsObj($session) Then
+    Exit
+  EndIf
+
+  $session.findById("wnd[0]/tbar[0]/okcd").text = "/nQM15"
+  
+  $session.findById("wnd[0]/usr/chkDY_OFN").selected = True
+  $session.findById("wnd[0]/usr/chkDY_RST").selected = True
+  $session.findById("wnd[0]/usr/chkDY_IAR").selected = True
+  $session.findById("wnd[0]/usr/chkDY_MAB").selected = True
+ ; $session.findById("wnd[0]").sendVKey(0)
+
+;-End-------------------------------------------------------------------
+EndFunc
