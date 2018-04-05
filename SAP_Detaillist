@@ -12,21 +12,21 @@ _IEErrorHandlerRegister()
 ;#################################################################################################################################################
 ;04/2018
 ; Dieses Script stellt die Eingangsdaten aus SAP bereit 
-;�SAP Transaktion zkdret
-;�SAP Transaktion qm11 (zu q1 und z2)
-;�SAP Transaktion qm15 (zu q1 und z2)
-;�Delta Fehlerberichte
-;�Kundenberichte, die Verzeichnis M:\07_CPQ_Alle\CQM-CM\02_CM\04_CM-IE_CIS\BERICHTE\Kundenberichte\* abgelegt sind.
-;�Lieferantenberichte, die im Verzeichnis "J:\Austausch\Lief_berichte\" abgelegt sind und die 31er Auftragsnummer zum Vorgang im Namen haben.
+;SAP Transaktion zkdret
+;SAP Transaktion qm11 (zu q1 und z2)
+;SAP Transaktion qm15 (zu q1 und z2)
+;Delta Fehlerberichte
+;Kundenberichte, die Verzeichnis M:\07_CPQ_Alle\CQM-CM\02_CM\04_CM-IE_CIS\BERICHTE\Kundenberichte\* abgelegt sind.
+;Lieferantenberichte, die im Verzeichnis "J:\Austausch\Lief_berichte\" abgelegt sind und die 31er Auftragsnummer zum Vorgang im Namen haben.
 
 ;ZKDRET
-;Ben�tigte Felder:
-;Verkaufsbeleg (mit 3100* f�llen)
-;Datum, an dem der Satz hinzu (mit 01.01.2012 bis Tagesdatum f�llen)
-;Materialnummer (mit 2866743 f�llen)
-;Verkaufsbelegart (mit ZRAT f�llen)
-;Positionstyp Vertriebsbeleg (mit ZRRA f�llen)
-;Meldungsart (mit S1 f�llen)
+;Benötigte Felder:
+;Verkaufsbeleg (mit 3100* füllen)
+;Datum, an dem der Satz hinzu (mit 01.01.2012 bis Tagesdatum füllen)
+;Materialnummer (mit 2866743 füllen)
+;Verkaufsbelegart (mit ZRAT füllen)
+;Positionstyp Vertriebsbeleg (mit ZRRA füllen)
+;Meldungsart (mit S1 füllen)
 ;Ausgabeform: Tabellenkalkulation
 ;#################################################################################################################################################
 
@@ -156,7 +156,7 @@ Func CreateStart()
 		sleep(200)
 		
 		$j=$j+1
-		;Ausf�hren
+		;Ausführen
 		_SAPVKeysSend("F8")	
 	Else
 		MsgBox(0,"Achtung","falsche transaktion")
@@ -176,7 +176,7 @@ Func CreateQM11()
 	_SAPWinClose("SAP Easy Access")	
 	
 	sleep(200)
-	if _SAPWinExists("Liste Qualit�tsmeldungen anzeigen: Selektion Meldungen") Then
+	if _SAPWinExists("Liste Qualitätsmeldungen anzeigen: Selektion Meldungen") Then
 		Local $sNewDate, $firstDate, $firstDate_, $LastDay
 		Local $Year = @YEAR
 		Local $Month = @MON -1
@@ -222,7 +222,7 @@ Func CreateQM11()
 				
 		$MyBox= MsgBox(1,"Achtung","Datengenerierung beginnt...Dauert etwas")
 		if $MyBox==1 then
-			;Ausf�hren
+			;Ausführen
 			_SAPVKeysSend("F8")	
 			sleep(200)	
 		EndIf
@@ -299,7 +299,7 @@ sleep(200)
 		sleep(500)
 		$MyBox= MsgBox(1,"Achtung","Datengenerierung beginnt...Dauert etwas")
 		if $MyBox==1 then
-			;Ausf�hren
+			;Ausführen
 			_SAPVKeysSend("F8")	
 			sleep(200)	
 		EndIf
