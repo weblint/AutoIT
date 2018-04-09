@@ -347,7 +347,7 @@ Func SAPback()
 EndFunc
 
 func GetACCESS()
-	;dim clip variant
+	;Daten aus dem SAP werden in einem neuen Datensatz von ACCESS gespeichert
 	WinActivate("Personal TAVA")
 	WinWaitActive("Personal TAVA","",10)
 	sleep(500)
