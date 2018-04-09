@@ -8,37 +8,8 @@
 #include <IE.au3>
 _IEErrorHandlerRegister()
 
-; Dieses Script öffnet SAP und filtert die Ergebnisse der Abfragen zusammen
-;•SAP Transaktion zkdret
-;•SAP Transaktion qm11 (zu q1 und z2)
-;•SAP Transaktion qm15 (zu q1 und z2)
-;•Delta Fehlerberichte
-;•Kundenberichte, die Verzeichnis M:\07_CPQ_Alle\CQM-CM\02_CM\04_CM-IE_CIS\BERICHTE\Kundenberichte\* abgelegt sind.
-;•Lieferantenberichte, die im Verzeichnis "J:\Austausch\Lief_berichte\" abgelegt sind und die 31er Auftragsnummer zum Vorgang im Namen haben.
-
-;ZKDRET
-;Benötigte Felder:
-;Verkaufsbeleg (mit 3100* füllen)
-;Datum, an dem der Satz hinzu (mit 01.01.2012 bis Tagesdatum füllen)
-;Materialnummer (mit 2866743 füllen)
-;Verkaufsbelegart (mit ZRAT füllen)
-;Positionstyp Vertriebsbeleg (mit ZRRA füllen)
-;Meldungsart (mit S1 füllen)
-;Ausgabeform: Tabellenkalkulation
-
-Dim $txtS1
-Dim $VKBeleg
-Dim $DatVon
-Dim $today
-Dim $MatNr, $Pos,$Meld
 
 
-#include <ButtonConstants.au3>
-#include <DateTimeConstants.au3>
-#include <EditConstants.au3>
-#include <GUIConstantsEx.au3>
-#include <StaticConstants.au3>
-#include <WindowsConstants.au3>
 #Region ### START Koda GUI section ### Form=
 $Form1_1 = GUICreate("Detailauswertungen (halb)automatisiert erzeugen [1.0.0]", 536, 357, 908, 311)
 $Group1 = GUICtrlCreateGroup("QM11", 16, 208, 505, 65)
