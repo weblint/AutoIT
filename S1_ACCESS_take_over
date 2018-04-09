@@ -1,0 +1,20 @@
+func GetACCESS()
+	;Daten aus dem SAP werden in einem neuen Datensatz von ACCESS gespeichert
+	_SAPSessAttach("SAP Easy Access")
+	;ACCESS vorbereiten...
+	WinActivate("Personal TAVA")
+	WinWaitActive("Personal TAVA","",10)
+	sleep(500)
+	;Fenster Maximieren
+	MouseClick("left",949,19)
+	MouseClick("left",949,19)
+	;Neuen Datensatz anlegen
+	;MouseClick("left",177,23)
+	sleep(500)
+	;Fenster Minimieren
+	MouseClick("left",949,19)
+	MouseClick("left",949,19)
+	msgbox(0,"","Pause")
+	
+		
+EndFunc
