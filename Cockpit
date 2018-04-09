@@ -1,0 +1,368 @@
+#include <.\include\GUIConstantsEx.au3>
+#include <.\include\WindowsConstants.au3>
+#include <.\include\SAP.au3>
+;Benötigte Infos für S1 anlegen:
+;Vorankündigung?
+;Menge
+;Artikelnummer
+;Revision
+;Bezeichnung
+;Menge
+;Bestellnr
+;Meldender
+;Codierung
+;Kundennummer
+;-------------------------------------
+;Benötigte Infos für Endbescheid:
+;Kundennummer
+;Bestellnummer
+;Menge
+;Artikelnummer
+;Revision
+;Bezeichnung
+
+Dim $txtS1
+Dim $CustNo
+Dim $S1, $Q1,$Koord, $MatNo, $MatName, $kolo, $anf
+Dim $tmp, $CX060
+Dim $i, $sList
+Dim $id, $task
+Dim $today
+
+
+
+Global $aArray[5] = ["Kathrin", "Matthias", "Dominik", "Klaus"]
+
+; And here we get the elements into a list
+$sList = ""
+For $i = 0 To UBound($aArray) - 1
+    $sList &= "|" & $aArray[$i]
+Next
+StartGUI()
+
+Func StartGUI()
+    ;Local $sFilePath = "..\GUI\logo4.gif"
+	Local $iPID
+	Local $xEB, $yEB
+	Local $xS1, $yS1
+	
+	;Offsets for GUI
+	$xS1 = 1
+	$yS1 = 1
+	
+	$xEB = 1
+	$yEB = 270
+	
+	$x2nd = 120
+	$x3rd = 240
+	;Create a GUI
+    $hGUI = GUICreate("S1 Q1 Cockpit", 470, 420)
+	;Gruppe S1 anlegen
+	$lblCust= GUICtrlCreateLabel("Kundennummer:",$xS1+10,$yS1+20)
+	$idCust = GUICtrlCreateInput("",$xS1+$x2nd,$yS1+15,60,20)
+	$lblMatno= GUICtrlCreateLabel("Materialnummer:",$xS1+10,$yS1+45)
+	$idMatno = GUICtrlCreateInput("",$xS1+$x2nd,$yS1+40,60,20)
+	$lblOrd = GUICtrlCreateLabel("Bestellnummer:",$xS1+10,$yS1+70)
+	$idOrd = GUICtrlCreateInput("",$xS1+$x2nd,$yS1+65,60,20)
+	$lblCode = GUICtrlCreateLabel("Codierung:",$xS1+10,$yS1+95)
+	$Code = GUICtrlCreateCombo("", $xS1+$x2nd, $yS1+90)
+	$lblMeld = GUICtrlCreateLabel("Meldender:",$xS1+10,$yS1+120)
+	$idMeld = GUICtrlCreateInput("",$xS1+$x2nd,$yS1+115,60,20)
+	$lblrev= GUICtrlCreateLabel("-",$xS1+$x2nd+65,$yS1+45)
+	$idrev = GUICtrlCreateInput("",$xS1+$x2nd+75,$yS1+40,20,20)
+	$chk_Ersatz = GUICtrlCreateCheckbox ("Vorankündigung",$xS1+$x3rd, $yS1+15)
+	$S130 = GUICtrlCreateCheckbox ("S130",$xS1+$x3rd,$yS1+35)
+	$X210 = GUICtrlCreateCheckbox ("X210",$xS1+$x3rd,$yS1+55)
+	$lblL1 = GUICtrlCreateLabel("Autor",$xS1+10,$yS1+165)
+	$L1 = GUICtrlCreateCombo("", $xS1+$x2nd, $yS1+165,60)
+	GUICtrlSetData($L1, $sList)
+	$lblKoord = GUICtrlCreateLabel("Koordinator",$xS1+10,$yS1+145)
+	$Ko = GUICtrlCreateCombo("", $xS1+$x2nd, $yS1+140,60)
+	$idS1Q1 = GUICtrlCreateButton("S1/Q1 anlegen", $xS1+10, $yS1+220, 85, 25)
+	$grpS1 = GUICtrlCreateGroup("S1/Q1 anlegen", $xS1, $yS1, 350, 260)
+	;Gruppe Eingangsbestätigung
+	$idEB = GUICtrlCreateButton("EB erstellen", $xEB+10, $yEB+40, 85, 25)
+	$lblS1 = GUICtrlCreateLabel("S1:",$xEB+10,$yEB+20)
+	$idS1 = GUICtrlCreateInput("",$xEB+$x2nd,$yEB+15,60,20)
+	$chk_Ersatz = GUICtrlCreateCheckbox ("Kolo Vorabersatz",$xEB+210,$yEB+15)
+	$chk_Anf = GUICtrlCreateCheckbox ("Material zur Analyse",$xEB+210,$yEB+35)
+	$X060 = GUICtrlCreateCheckbox ("X060 anlegen",$xEB+210,$yEB+55)
+	$grpEB = GUICtrlCreateGroup("Eingangsbestätigung", $xEB, $yEB, 350, 100)
+	;Andere Funktionen
+	$idTasks = GUICtrlCreateButton("Zeige Maßnahmen", $x3rd+120, 10, 105, 25)
+	$idBack = GUICtrlCreateButton("SAP: zurück", $x3rd+120, 40, 105, 25)
+	$idACC = GUICtrlCreateButton("ACCESS:S1übernehmen",$x3rd+120,80,105,25)
+	;Ende
+ 	$idCancel = GUICtrlCreateButton("Schliessen", $x3rd+120, 300, 85, 25)
+   ;Local $idDate = GUICtrlCreateMonthCal("2016/06/01", $x3rd+120, 200, 100, 100)
+
+; Display the GUI.
+    GUISetState(@SW_SHOW, $hGUI)
+
+    ; Loop until the user exits.
+	 While 1
+        Switch GUIGetMsg()
+            Case $GUI_EVENT_CLOSE
+                ExitLoop
+
+            Case $idEB
+				$txtS1 = GUICtrlRead($idS1)
+				if $txtS1 ="" Then	
+					MsgBox (64,"Achtung!","S1 leer!")
+				Else	
+					;Daten einlesen
+					$kolo = GUICtrlRead($chk_Ersatz)
+					$anf = GUICtrlRead($chk_Anf)
+					$CX060 = GUICtrlRead($X060)
+					OpenS1SAP()
+					ReadS1SAP()
+					;Q1 gefunden?
+					if $Q1<> "-1" Then	
+						SendToWordpad ()
+						if $CX060 = $GUI_CHECKED Then
+							AddTaskQ1()
+						EndIf
+						PrepareMail ()
+						sleep(100)
+						_SAPVKeysSend("F3")
+						sleep(100)
+						_SAPVKeysSend("F3")
+						sleep(100)
+						_SAPVKeysSend("F3")
+					EndIf
+				EndIf
+			Case $idS1Q1
+				CreateS1Q1()
+			Case $idTasks
+					FindTasks()
+			Case $idBack
+					SAPback()
+			case $idACC
+					GetACCESS()
+			Case $idCancel
+				ExitLoop
+        EndSwitch
+    WEnd
+    ; Delete the previous GUIs and all controls.
+    GUIDelete($hGUI)
+EndFunc  
+
+Func CreateS1Q1()
+;Erst Daten auf Plausibilität prüfen
+
+
+;dann anlegen
+	_SAPSessAttach("SAP Easy Access")
+	_SAPObjValueSet("tbar[0]/okcd", "/nIW51")
+	sleep(200)
+	
+EndFunc
+
+Func OpenS1SAP()
+	_SAPSessAttach("SAP Easy Access")
+	_SAPObjValueSet("tbar[0]/okcd", "/nIW53")
+	sleep(200)
+	_SAPVKeysSend("Enter")
+	sleep(200)
+	_SAPObjValueSet("usr/ctxtRIWO00-QMNUM", $txtS1)
+	sleep(200)
+	_SAPVKeysSend("Enter")
+	sleep(200)
+	;delete popups
+	_SAPVKeysSend("Enter")
+	sleep(100)
+	_SAPVKeysSend("Enter")
+	sleep(100)
+	_SAPVKeysSend("Enter")
+	sleep(100)
+	_SAPVKeysSend("Enter")
+	sleep(100)
+EndFunc
+
+Func ReadS1SAP()
+	local $str
+	_SAPSessAttach("Servicemeldung anzeigen: Servicemeldung PxC")
+	$CustNo = _SAPObjValueGet("usr/tabsTAB_GROUP_10/tabp10\TAB01/ssubSUB_GROUP_10:SAPLIQS0:7235/subCUSTOM_SCREEN:SAPLIQS0:7212/subSUBSCREEN_1:SAPLIQS0:7515/subANSPRECH:SAPLIPAR:0700/tabsTSTRIP_700/tabpKUND/ssubTSTRIP_SCREEN:SAPLIPAR:0130/subADRESSE:SAPLIPAR:0150/ctxtVIQMEL-KUNUM")
+	$S1 = _SAPObjValueGet("usr/subSCREEN_1:SAPLIQS0:1060/txtVIQMEL-QMNUM")
+	;In den Belegfluss springen
+	_SAPVKeysSend("Ctrl+F2")
+	;Q-Meldung suchen
+	$Q1 = "0"
+	$i = 2
+	while ($Q1 = "0") 
+		$str = "          " & string($i)
+		$SAP_Session.findById("wnd[0]/usr/shell/shellcont[1]/shell[1]" ).selectItem($str, "&Hierarchy")
+		sleep(100)
+		$SAP_Session.findById("wnd[0]/usr/shell/shellcont[1]/shell[1]" ).ensureVisibleHorizontalItem ($str, "&Hierarchy")
+		sleep(100)
+		$SAP_Session.findById("wnd[0]/usr/shell/shellcont[1]/shell[1]" ).doubleClickItem($str, "&Hierarchy")
+		sleep(100)
+
+		if _SAPWinExists("Meldung anzeigen: Kundenreklamation") Then
+			
+			$Q1 = _SAPObjValueGet("usr/subSCREEN_1:SAPLIQS0:1070/ctxtVIQMEL-QMNUM")
+			$MatNo = _SAPObjValueGet("usr/tabsTAB_GROUP_10/tabp10\TAB01/ssubSUB_GROUP_10:SAPLIQS0:7235/subCUSTOM_SCREEN:SAPLIQS0:7212/subSUBSCREEN_2:SAPLIQS0:7322/subOBJEKT:SAPMQM00:3000/ctxtRQM00-MATNR")
+			$MatName = _SAPObjValueGet("usr/tabsTAB_GROUP_10/tabp10\TAB01/ssubSUB_GROUP_10:SAPLIQS0:7235/subCUSTOM_SCREEN:SAPLIQS0:7212/subSUBSCREEN_2:SAPLIQS0:7322/subOBJEKT:SAPMQM00:3000/txtRIWO00-MATKTX")
+		;Ausführung Tab
+			$sap_session.findById("wnd[" & $sap_window_num & "]/" &"usr/tabsTAB_GROUP_10/tabp10\TAB03").select
+
+		;Name Koordinator
+			$Koord = _SAPObjValueGet("usr/tabsTAB_GROUP_10/tabp10\TAB03/ssubSUB_GROUP_10:SAPLIQS0:7235/subCUSTOM_SCREEN:SAPLIQS0:7212/subSUBSCREEN_2:SAPLIQS0:7517/subPARTNER:SAPLIPAR:0201/tblSAPLIPARTCTRL_0200/ctxtDIADR-NAME_LIST[2,1]")
+		else
+			;MsgBox (4,"Alert","Das ist keine Q1")
+			_SAPVKeysSend("F3")
+		EndIf
+		$i = $i + 1
+		;Bei 9 abbrechen
+		if $i > 9 Then
+			$Q1 = "-1"
+			MsgBox (1,"Alert","Keine Q-Meldung im Belegfluss gefunden!")
+			_SAPVKeysSend("F3")
+			sleep(100)
+			_SAPVKeysSend("F3")
+			sleep(100)
+			_SAPVKeysSend("F3")
+		EndIf
+	WEnd
+
+EndFunc
+
+Func SendToWordpad ()
+run("Notepad.exe")
+WinWaitActive("Unbenannt - Editor")
+Send("Kundennummer: "& $CustNo&"{ENTER}{ENTER}")
+Send("Artikel: "&$MatName & "       Artikel-Nr:"&$MatNo&"{ENTER}{ENTER}")
+
+Send("Servicenummer: "& $S1 &"   (bitte bei jeglicher Kommunikation angeben){ENTER}{ENTER}")
+Send("Qualitätsmeldung: " & $Q1 &"{ENTER}{ENTER}")
+Send("Sehr geehrte Damen und Herren, {ENTER}{ENTER}Ihre Beanstandung ist bei uns unter der oben genannten {ENTER}") 
+Send("Service-Meldungs-Nr. erfasst. Die Bearbeitung der Beanstandung wird{ENTER}schnellstmöglich durchgeführt.{ENTER}{ENTER}")
+
+if $anf = $GUI_CHECKED Then
+	Send("Zur Prüfung des Sachverhaltes benötigen wir von Ihnen die beanstandeten Artikel.{ENTER}")
+	Send("Bitte senden Sie das Material unter Angabe der Servicemeldung an:{ENTER}{ENTER}")
+	Send("Phoenix Contact GmbH & Co. KG{ENTER}")
+	Send("Flachsmarktstraße 8{ENTER}")
+	Send("D-32825 Blomberg{ENTER}{ENTER}")
+EndIf	
+
+if $kolo = $GUI_CHECKED Then
+	Send("Die Ersatzlieferung erfolgt auf reiner Kulanzbasis und ohne Anerkennung einer{ENTER}")
+	Send("Rechtspflicht. Wir behalten uns vor, eine erfolgte Ersatzlieferung nachträglich {ENTER}")
+	Send("in Rechnung zu stellen, sofern eine Prüfung ergibt, dass wir zur Vornahme einer {ENTER}")
+	Send("Ersatzlieferung rechtlich nicht verpflichtet waren.{ENTER}{ENTER}")
+EndIf
+
+Send("Bei Rückfragen wenden Sie sich bitte unter Angabe der Service-Meldungs-Nr. an "& $Koord & ".{ENTER}")
+Send("Unsere allgemeine E-Mail Adresse: complaint-management@phoenixcontact.com")
+;MsgBox (32,"Eingangsbestätigung","Text bitte prüfen, ggf. ändern. Erst dann auf OK klicken!")
+Send("^a^c")
+EndFunc
+
+Func AddtaskQ1 ()
+	_SAPObjValueSet("tbar[0]/okcd", "/nQM02")
+	_SAPVKeysSend("Enter")
+	sleep(100)
+	_SAPObjValueSet("usr/ctxtRIWO00-QMNUM", $Q1)
+	sleep(100)
+;delete popups
+	_SAPVKeysSend("Enter")
+	sleep(100)
+	_SAPVKeysSend("Enter")
+	sleep(100)
+	_SAPVKeysSend("Enter")
+	sleep(100)
+	_SAPVKeysSend("Enter")
+	sleep(100)
+	_SAPVKeysSend("Enter")
+	sleep(100)
+	;Zu Maßnahmen
+	$sap_session.findById("wnd[" & $sap_window_num & "]/" &"usr/tabsTAB_GROUP_10/tabp10\TAB11").select
+	;$id = "wnd[" & $sap_window_num & "]/" & "usr/tabsTAB_GROUP_10/tabp10\TAB11/ssubSUB_GROUP_10:SAPLIQS0:7120/tblSAPLIQS0MASSNAHMEN_VIEWER/ctxtVIQMSM-MNCOD[2,0]"
+	
+	$i = 2
+	$task="NULL"
+		while ($task <> "") 
+		$str = "usr/tabsTAB_GROUP_10/tabp10\TAB11/ssubSUB_GROUP_10:SAPLIQS0:7120/tblSAPLIQS0MASSNAHMEN_VIEWER/ctxtVIQMSM-MNCOD[2,"&$i&"]"
+		
+		$task = _SAPObjValueGet($str)
+		;MsgBox (1,"Alert","$i: "&$i&" Task value:"&$task)
+		$i = $i + 1
+	WEnd	
+	$i=$i-1
+	;MsgBox (1,"END","$i: "&$i&" Task value:"&$task)
+	$str = "usr/tabsTAB_GROUP_10/tabp10\TAB11/ssubSUB_GROUP_10:SAPLIQS0:7120/tblSAPLIQS0MASSNAHMEN_VIEWER/ctxtVIQMSM-MNCOD[2,"&$i&"]"
+	_SAPObjValueSet($str, "X060")
+	_SAPVKeysSend("Enter")
+	$str = "wnd[" & $sap_window_num & "]/usr/tabsTAB_GROUP_10/tabp10\TAB11/ssubSUB_GROUP_10:SAPLIQS0:7120/tblSAPLIQS0MASSNAHMEN_VIEWER/btnQMICON-LTMASS[5,"&$i&"]"
+	$SAP_Session.findById($str).setFocus
+	$SAP_Session.findById($str).press
+	;paste
+	_SAPVKeysSend("F9")
+	sleep(100)
+	_SAPVKeysSend("F3")
+	
+	;Bearbeiter eintragen
+	;Maßnahme abschliessen
+
+	
+EndFunc
+
+Func PrepareMail ()
+;~ 	WinActivate ( "IBM")
+;~ 	WinWaitActive ("IBM","",10)
+;~ 	sleep(500)
+;~ 	send("^m")
+;~ 	sleep(500)
+;~ 	send("{TAB}")
+;~ 	sleep(100)
+;~ 	send("{TAB}")
+;~ 	sleep(100)
+;~ 	send("{TAB}")
+;~ 	sleep(100)
+;~ 	send("{TAB}")
+;~ 	sleep(100)
+;~ 	send("^v")
+	
+EndFunc
+
+Func FindTasks()
+	
+_SAPSessAttach("SAP Easy Access")
+_SAPObjValueSet("tbar[0]/okcd", "/nIQS9")
+; Press the "Enter" key.
+_SAPVKeysSend("Enter")
+sleep(500)
+;set to one year
+_SAPObjSelect("usr/tabsTABSTRIP_TASK/tabpTASK_ALL/ssub%_SUBSCREEN_TASK:RIQSMEL2:0103/radDAT_YEAR")
+sleep(500)
+;submit
+_SAPVKeysSend("F8")
+	
+EndFunc
+
+Func SAPback()
+	_SAPVKeysSend("F3")
+	sleep(100)
+EndFunc
+
+func GetACCESS()
+	;Daten aus dem SAP werden in einem neuen Datensatz von ACCESS gespeichert
+	_SAPSessAttach("SAP Easy Access")
+	
+	WinActivate("Personal TAVA")
+	WinWaitActive("Personal TAVA","",10)
+	sleep(500)
+	;Fenster Maximieren
+	MouseClick("left",949,19)
+	MouseClick("left",949,19)
+	;Neuen Datensatz anlegen
+	;MouseClick("left",177,23)
+	sleep(500)
+	;Fenster Minimieren
+	MouseClick("left",949,19)
+	MouseClick("left",949,19)
+	msgbox(0,"","Pause")
+	
+		
+EndFunc
