@@ -1,6 +1,28 @@
+#include <ButtonConstants.au3>
+#include <GUIConstantsEx.au3>
+#include <WindowsConstants.au3>
+#include <.\include\SAP.au3>
+#Region ### START Koda GUI section ### Form=
+$Form1 = GUICreate("Form1", 625, 442, 192, 124)
+$Daten_to_Access = GUICtrlCreateButton("S1-Daten nach ACCESS", 424, 72, 163, 49, $WS_GROUP)
+GUISetState(@SW_SHOW)
+#EndRegion ### END Koda GUI section ###
+
+While 1
+	$nMsg = GUIGetMsg()
+	Switch $nMsg
+		Case $GUI_EVENT_CLOSE
+			Exit
+
+		case $Daten_to_Access
+			_SAPSessAttach("SAP Easy Access")
+			GetACCESS()		
+	EndSwitch
+WEnd
+
 func GetACCESS()
 	;Daten aus dem SAP werden in einem neuen Datensatz von ACCESS gespeichert
-	_SAPSessAttach("SAP Easy Access")
+	;_SAPSessAttach("SAP Easy Access")
 	;ACCESS vorbereiten...
 	WinActivate("Personal TAVA")
 	WinWaitActive("Personal TAVA","",10)
