@@ -39,7 +39,7 @@ func GetACCESS()
 	$MyBox= MsgBox(1,"","Neuen Datensatz anlegen?")
 	if $MyBox==1 then
 		MsgBox(0,"","Datensatz wird angelegt")
-		MouseClick("left",195,96)
+		;MouseClick("left",195,96)
 		$MyBox= msgbox(1,"","Hat der Klick geklappt?")
 		if $MyBox==1 then
 			sleep(500)
@@ -53,22 +53,31 @@ func GetACCESS()
 				MouseClick("left",118,144)
 				sleep(500)
 				msgbox (0,"","Markieren")
+				MsgBox(0,"","HOME")
 				Send ("{HOME}")
+				
+				MsgBox(0,"","LSHIFT")
 				send ("{LSHIFT}")
+				MsgBox(0,"","SHIFTDOWN")
 				Send ("{SHIFTDOWN}")
-				send ("{END}")
-				msgbox (0,"","Kopieren")
-				copypaste()
-				SendKeepActive("")
-				
-				;MouseClick("left",435,223)
-				msgbox (0,"","Einfügen Notepad")
-				; Run Notepad
-				Run("notepad.exe")
-				; Wait for the Notepad become active - it is titled "Untitled - Notepad" on English systems
-				WinWaitActive("[CLASS:Notepad]")
-				copypaste()
-				
+				$MyBox= msgbox(1,"","Hat der Klick geklappt?")
+				if MyBox==1 then
+					send ("{END}")
+					Send("{SHIFTUP}")
+					msgbox (0,"","Kopieren")
+					copypaste()
+					SendKeepActive("")
+					
+					;MouseClick("left",435,223)
+					msgbox (0,"","Einfügen Notepad")
+					; Run Notepad
+					Run("notepad.exe")
+					; Wait for the Notepad become active - it is titled "Untitled - Notepad" on English systems
+					WinWaitActive("[CLASS:Notepad]")
+					copypaste()
+				Else
+					Exit
+				EndIf
 			Else
 				Exit
 			EndIf
