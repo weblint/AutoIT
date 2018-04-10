@@ -54,18 +54,19 @@ func GetACCESS()
 				sleep(500)
 				msgbox (0,"","Markieren")
 				Send ("{SHIFTDOWN}")
+				Send ("{HOME}")
 				send ("{END}")
 				msgbox (0,"","Kopieren")
 				copypaste()
+				SendKeepActive("")
 				
-				MouseClick("left",435,223)
-				msgbox (0,"","Einfügen")
+				;MouseClick("left",435,223)
+				msgbox (0,"","Einfügen Notepad")
 				; Run Notepad
 				Run("notepad.exe")
 				; Wait for the Notepad become active - it is titled "Untitled - Notepad" on English systems
 				WinWaitActive("[CLASS:Notepad]")
 				copypaste()
-				SendKeepActive("")
 			Else
 				Exit
 			EndIf
