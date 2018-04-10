@@ -92,6 +92,7 @@ Func StartGUI()
 	$idTasks = GUICtrlCreateButton("Zeige Maßnahmen", $x3rd+120, 10, 105, 25)
 	$idBack = GUICtrlCreateButton("SAP: zurück", $x3rd+120, 40, 105, 25)
 	$idACC = GUICtrlCreateButton("S1-->ACCESS",$x3rd+120,80,105,25)
+	$idACC_P = GUICtrlCreateButton("Preise",$x3rd+120,120,105,25)
 	;Ende
  	$idCancel = GUICtrlCreateButton("Schliessen", $x3rd+120, 300, 85, 25)
    ;Local $idDate = GUICtrlCreateMonthCal("2016/06/01", $x3rd+120, 200, 100, 100)
@@ -141,6 +142,9 @@ Func StartGUI()
 					GetACCESS()
 			Case $idCancel
 				ExitLoop
+				
+			Case $idACC_P
+				    GetPrice()
         EndSwitch
     WEnd
     ; Delete the previous GUIs and all controls.
@@ -399,7 +403,54 @@ func GetACCESS()
 MsgBox(0,"","Ready")
 Exit
 EndFunc
-	
+
+Func GetPrice()
+	_SAPSessAttach("SAP Easy Access")
+	_SAPObjValueSet("tbar[0]/okcd", "/nZV11")
+	; Press the "Enter" key.
+	_SAPVKeysSend("Enter")
+	sleep(500)
+	SendKeepActive("Anfrage anlegen: Einstieg")
+	sleep(500)
+	MouseClick("left",163,231)
+	send("^a")
+	sleep(500)
+	send("^x")
+	sleep(500)
+	send("1000");Verkaufsorganisation
+	sleep(500)
+	MouseClick("left",163,254)
+	send("^a")
+	sleep(500)
+	send("^x")
+	sleep(500)
+	send("01");Vertriebsweg
+	sleep(500)
+	MouseClick("left",17,44)
+	sleep(500)
+	MouseClick("left",130,167)
+	sleep(500)
+	send ("512695");Auftraggeber
+	sleep(500)
+	_SAPVKeysSend("Enter")
+	sleep(500)
+	MouseClick("left",164,415)
+	_SAPVKeysSend("Enter")
+	sleep(500)
+	_SAPVKeysSend("Enter")
+	sleep(500)
+	MouseClick("left",629,232)
+	sleep(500)
+	MouseClick("left",85,517)
+	send("2700784");Material
+	sleep(500)
+	_SAPVKeysSend("Enter")
+	sleep(500)
+	MouseClick("left",189,518)
+	send("1")
+	sleep(500)
+	_SAPVKeysSend("Enter")
+EndFunc
 
 
 Func copy()
