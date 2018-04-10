@@ -28,7 +28,7 @@ Dim $tmp, $CX060
 Dim $i, $sList
 Dim $id, $task
 Dim $today
-
+Dim $idDeb,$idMat_
 
 
 Global $aArray[5] = ["Kathrin", "Matthias", "Dominik", "Klaus"]
@@ -84,6 +84,7 @@ Func StartGUI()
 	$idEB = GUICtrlCreateButton("EB erstellen", $xEB+10, $yEB+40, 85, 25)
 	$lblS1 = GUICtrlCreateLabel("S1:",$xEB+10,$yEB+20)
 	$idS1 = GUICtrlCreateInput("",$xEB+$x2nd,$yEB+15,60,20)
+	
 	$chk_Ersatz = GUICtrlCreateCheckbox ("Kolo Vorabersatz",$xEB+210,$yEB+15)
 	$chk_Anf = GUICtrlCreateCheckbox ("Material zur Analyse",$xEB+210,$yEB+35)
 	$X060 = GUICtrlCreateCheckbox ("X060 anlegen",$xEB+210,$yEB+55)
@@ -93,6 +94,8 @@ Func StartGUI()
 	$idBack = GUICtrlCreateButton("SAP: zurück", $x3rd+120, 40, 105, 25)
 	$idACC = GUICtrlCreateButton("S1-->ACCESS",$x3rd+120,80,105,25)
 	$idACC_P = GUICtrlCreateButton("Preise",$x3rd+120,120,105,25)
+	$idDeb = GUICtrlCreateInput("Deb",$x3rd+120,150,60,20)
+	$idMat_ = GUICtrlCreateInput("Mat",$x3rd+120,180,60,20)
 	;Ende
  	$idCancel = GUICtrlCreateButton("Schliessen", $x3rd+120, 300, 85, 25)
    ;Local $idDate = GUICtrlCreateMonthCal("2016/06/01", $x3rd+120, 200, 100, 100)
@@ -405,6 +408,7 @@ Exit
 EndFunc
 
 Func GetPrice()
+	Dim $Deb
 	_SAPSessAttach("SAP Easy Access")
 	_SAPObjValueSet("tbar[0]/okcd", "/nZV11")
 	; Press the "Enter" key.
@@ -430,7 +434,9 @@ Func GetPrice()
 	sleep(500)
 	MouseClick("left",130,167)
 	sleep(500)
-	send ("512695");Auftraggeber
+	;send ("512695");Auftraggeber
+	$Deb=GUICtrlRead($idDeb)
+	_SAPObjValueSet("usr/subSUBSCREEN_HEADER:SAPMV45A:4021/subPART-SUB:SAPMV45A:4701/ctxtKUAGV-KUNNR",$Deb)
 	sleep(500)
 	_SAPVKeysSend("Enter")
 	sleep(500)
@@ -442,7 +448,9 @@ Func GetPrice()
 	MouseClick("left",629,232)
 	sleep(500)
 	MouseClick("left",85,517)
-	send("2700784");Material
+	;send("2700784");Material
+	$Mat_= GUICTRLREAD($idMat_)
+	_SAPObjValueSet("usr/tabsTAXI_TABSTRIP_OVERVIEW/tabpT\01/ssubSUBSCREEN_BODY:SAPMV45A:4400/subSUBSCREEN_TC:SAPMV45A:4900/tblSAPMV45ATCTRL_U_ERF_AUFTRAG/ctxtRV45A-MABNR[1,0]",$Mat_)
 	sleep(500)
 	_SAPVKeysSend("Enter")
 	sleep(500)
