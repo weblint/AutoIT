@@ -91,7 +91,7 @@ Func StartGUI()
 	;Andere Funktionen
 	$idTasks = GUICtrlCreateButton("Zeige Maßnahmen", $x3rd+120, 10, 105, 25)
 	$idBack = GUICtrlCreateButton("SAP: zurück", $x3rd+120, 40, 105, 25)
-	$idACC = GUICtrlCreateButton("ACCESS:S1übernehmen",$x3rd+120,80,105,25)
+	$idACC = GUICtrlCreateButton("S1-->ACCESS",$x3rd+120,80,105,25)
 	;Ende
  	$idCancel = GUICtrlCreateButton("Schliessen", $x3rd+120, 300, 85, 25)
    ;Local $idDate = GUICtrlCreateMonthCal("2016/06/01", $x3rd+120, 200, 100, 100)
@@ -348,20 +348,69 @@ EndFunc
 
 func GetACCESS()
 	;Daten aus dem SAP werden in einem neuen Datensatz von ACCESS gespeichert
-	WinActivate("Personal TAVA")
-	WinWaitActive("Personal TAVA","",10)
+	;ACCESS vorbereiten...
+	;S1 eintragen...
+	WinWaitActive("Personal TAVA","",10);10 Sekunden warten bis es los geht
+	;Fenster Maximieren
+	msgbox(0,"","Ok, es geht los")
+	;Doppelklick um Fenster zu maximieren
+	MouseClick("left",949,19)
+	MouseClick("left",949,19)
 	sleep(500)
-	MouseClick("left",349,223)
-	sleep(500)
-	Send ("{END}")
-	sleep(500)
-	send ("{SHIFTDOWN}")
-	sleep(500)
-	send("{HOME}")
-	sleep(500)
-	send ("^c")
-	sleep(500)
-	Send("^C")
-	send ("{SHIFTUP}")
-		
+	;Neuen Datensatz anlegen
+	$MyBox= MsgBox(1,"","Neuen Datensatz anlegen?")
+	if $MyBox==1 then
+		MouseClick("left",195,94)
+		sleep(500)
+		;Fenster Minimieren Doppelklick
+		MouseClick("left",949,19)
+		MouseClick("left",949,19)
+		sleep(500)
+		msgbox(0,"","Pause: Bitte SAP auf die Servicenummer einstellen")
+		SendKeepActive("Servicemeldung anzeigen: Servicemeldung PxC")
+		MouseClick("left",118,144)
+		sleep(500)
+		send("^a")
+		sleep(500)
+		send("^c")
+		SendKeepActive ("");
+		sleep(500)
+		$str = ClipGet()
+		ConsoleWrite("Clip:"&$str&@CRLF)
+		copy()
+		SendKeepActive("")
+				;------------------------------------------------------------------------------------------------
+				; Run Notepad
+				;Run("notepad.exe")
+				; Wait for the Notepad become active - it is titled "Untitled - Notepad" on English systems
+				;WinWaitActive("[CLASS:Notepad]")
+				;------------------------------------------------------------------------------------------------
+		WinActivate("Personal TAVA")	
+		MouseClick("left",499,224)
+		sleep(500)
+		Send("^v")
+
+	ElseIf
+		Exit
+	EndIf
+MsgBox(0,"","Ende")
+Exit
 EndFunc
+	
+
+
+Func copy()
+   $clipboard = ClipGet() ; Store current clipboard
+
+   Send("^c") ; Press Ctrl+C to copy whatever was selected
+ 
+EndFunc
+
+Func paste()
+	
+	  Send("^v")
+
+EndFunc
+	
+		
+
