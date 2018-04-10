@@ -38,72 +38,53 @@ func GetACCESS()
 	;Neuen Datensatz anlegen
 	$MyBox= MsgBox(1,"","Neuen Datensatz anlegen?")
 	if $MyBox==1 then
-		MsgBox(0,"","Datensatz wird angelegt")
-		;MouseClick("left",195,96)
-		$MyBox= msgbox(1,"","Hat der Klick geklappt?")
-		if $MyBox==1 then
-			sleep(500)
-			;Fenster Minimieren Doppelklick
-			MouseClick("left",949,19)
-			MouseClick("left",949,19)
-			$MyBox= msgbox(1,"","Hat der Klick geklappt?")
-			if $MyBox==1 then
-				msgbox(0,"","Pause: Bitte SAP auf die Servicenummer einstellen")
-				SendKeepActive("Servicemeldung anzeigen: Servicemeldung PxC")
-				MouseClick("left",118,144)
-				sleep(500)
-				msgbox (0,"","Markieren")
-				MsgBox(0,"","HOME")
-				Send ("{HOME}")
-				
-				MsgBox(0,"","LSHIFT")
-				send ("{LSHIFT}")
-				MsgBox(0,"","SHIFTDOWN")
-				Send ("{SHIFTDOWN}")
-				$MyBox= msgbox(1,"","Hat der Klick geklappt?")
-				if MyBox==1 then
-					send ("{END}")
-					Send("{SHIFTUP}")
-					msgbox (0,"","Kopieren")
-					copypaste()
-					SendKeepActive("")
-					
-					;MouseClick("left",435,223)
-					msgbox (0,"","Einfügen Notepad")
-					; Run Notepad
-					Run("notepad.exe")
-					; Wait for the Notepad become active - it is titled "Untitled - Notepad" on English systems
-					WinWaitActive("[CLASS:Notepad]")
-					copypaste()
-				Else
-					Exit
-				EndIf
-			Else
-				Exit
-			EndIf
-		Else
-			Exit
-		EndIf
-	Else	
-		MsgBox(0,"","Ende")
+		MouseClick("left",195,94)
+		sleep(500)
+		;Fenster Minimieren Doppelklick
+		MouseClick("left",949,19)
+		MouseClick("left",949,19)
+		sleep(500)
+		msgbox(0,"","Pause: Bitte SAP auf die Servicenummer einstellen")
+		SendKeepActive("Servicemeldung anzeigen: Servicemeldung PxC")
+		MouseClick("left",118,144)
+		sleep(500)
+		send("^a")
+		sleep(500)
+		send("^c")
+		SendKeepActive ("");
+		sleep(500)
+		$str = ClipGet()
+		ConsoleWrite("Clip:"&$str&@CRLF)
+		copy()
+		SendKeepActive("")
+				;------------------------------------------------------------------------------------------------
+				; Run Notepad
+				;Run("notepad.exe")
+				; Wait for the Notepad become active - it is titled "Untitled - Notepad" on English systems
+				;WinWaitActive("[CLASS:Notepad]")
+				;------------------------------------------------------------------------------------------------
+		WinActivate("Personal TAVA")	
+		MouseClick("left",499,224)
+		sleep(500)
+		Send("^v")
+	ElseIf
 		Exit
 	EndIf
-	Exit
+MsgBox(0,"","Ende")
+Exit
 EndFunc
 	
 
 
-Func copypaste()
+Func copy()
    $clipboard = ClipGet() ; Store current clipboard
- 
+
    Send("^c") ; Press Ctrl+C to copy whatever was selected
  
-   $newClipboard = ClipGet() ; Fetch the clipboard again
- 
-   ; Check if we copied new text. If pressing ctrl+c without
-   ; anything selected, the clipboard remains the same
-   if $newClipboard == $clipboard Then
-	  ; We didn't copy anything, so lets paste instead
+EndFunc
+
+Func paste()
+	
 	  Send("^v")
-   EndIf
+
 EndFunc
