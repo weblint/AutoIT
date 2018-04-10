@@ -1,7 +1,10 @@
-#include <ButtonConstants.au3>
-#include <GUIConstantsEx.au3>
-#include <WindowsConstants.au3>
-#include <.\include\SAP.au3>
+#include <.\ButtonConstants.au3>
+#include <.\GUIConstantsEx.au3>
+#include <.\WindowsConstants.au3>
+;#include <.\include\SAP.au3>
+#include <.\ClipBoard.au3>
+;#include <.\include\IE.au3>
+;_IEErrorHandlerRegister()
 #Region ### START Koda GUI section ### Form=
 $Form1 = GUICreate("Form1", 625, 442, 192, 124)
 $Daten_to_Access = GUICtrlCreateButton("S1-Daten nach ACCESS", 424, 72, 163, 49, $WS_GROUP)
@@ -15,7 +18,7 @@ While 1
 			Exit
 
 		case $Daten_to_Access
-			_SAPSessAttach("SAP Easy Access")
+			;_SAPSessAttach("SAP Easy Access")
 			GetACCESS()		
 	EndSwitch
 WEnd
@@ -24,19 +27,69 @@ func GetACCESS()
 	;Daten aus dem SAP werden in einem neuen Datensatz von ACCESS gespeichert
 	;_SAPSessAttach("SAP Easy Access")
 	;ACCESS vorbereiten...
-	WinActivate("Personal TAVA")
-	WinWaitActive("Personal TAVA","",10)
-	sleep(500)
+	;WinActivate("Personal TAVA")
+	WinWaitActive("Personal TAVA","",10);10 Sekunden warten bis es los geht
 	;Fenster Maximieren
+	msgbox(0,"","Ok, es geht los")
+	;Doppelklick um Fenster zu maximieren
 	MouseClick("left",949,19)
 	MouseClick("left",949,19)
-	;Neuen Datensatz anlegen
-	;MouseClick("left",177,23)
 	sleep(500)
-	;Fenster Minimieren
-	MouseClick("left",949,19)
-	MouseClick("left",949,19)
-	msgbox(0,"","Pause")
+	;Neuen Datensatz anlegen
+	$MyBox= MsgBox(1,"","Neuen Datensatz anlegen?")
+	if $MyBox==1 then
+		MsgBox(0,"","Datensatz wird angelegt")
+		MouseClick("left",195,96)
+		$MyBox= msgbox(1,"","Hat der Klick geklappt?")
+		if $MyBox==1 then
+			sleep(500)
+			;Fenster Minimieren Doppelklick
+			MouseClick("left",949,19)
+			MouseClick("left",949,19)
+			$MyBox= msgbox(1,"","Hat der Klick geklappt?")
+			if $MyBox==1 then
+				msgbox(0,"","Pause: Bitte SAP auf die Servicenummer einstellen")
+				MouseClick("left",161,188)
+				sleep(500)
+				msgbox (0,"","Markieren")
+				Send ("{SHIFTDOWN}")
+				send ("{END}")
+				msgbox (0,"","Kopieren")
+				copypaste()
+				
+				MouseClick("left",435,223)
+				msgbox (0,"","Einfügen")
+				; Run Notepad
+				Run("notepad.exe")
+				; Wait for the Notepad become active - it is titled "Untitled - Notepad" on English systems
+				WinWaitActive("[CLASS:Notepad]")
+				copypaste()
+			Else
+				Exit
+			EndIf
+		Else
+			Exit
+		EndIf
+	Else	
+		MsgBox(0,"","Ende")
+		Exit
+	EndIf
+	Exit
+EndFunc
 	
-		
+
+
+Func copypaste()
+   $clipboard = ClipGet() ; Store current clipboard
+ 
+   Send("^c") ; Press Ctrl+C to copy whatever was selected
+ 
+   $newClipboard = ClipGet() ; Fetch the clipboard again
+ 
+   ; Check if we copied new text. If pressing ctrl+c without
+   ; anything selected, the clipboard remains the same
+   if $newClipboard == $clipboard Then
+	  ; We didn't copy anything, so lets paste instead
+	  Send("^v")
+   EndIf
 EndFunc
