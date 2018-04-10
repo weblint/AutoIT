@@ -334,7 +334,7 @@ _SAPObjValueSet("tbar[0]/okcd", "/nIQS9")
 _SAPVKeysSend("Enter")
 sleep(500)
 ;set to one year
-_SAPObjSelect("usr/tabsTABSTRIP_TASK/tabpTASK_ALL/ssub%_SUBSCREEN_TASK:RIQSMEL2:0103/radDAT_YEAR")
+;_SAPObjSelect("usr/tabsTABSTRIP_TASK/tabpTASK_ALL/ssub%_SUBSCREEN_TASK:RIQSMEL2:0103/radDAT_YEAR")
 sleep(500)
 ;submit
 _SAPVKeysSend("F8")
@@ -389,11 +389,14 @@ func GetACCESS()
 		MouseClick("left",499,224)
 		sleep(500)
 		Send("^v")
-
+		sleep (500)
+		MouseClick("left",829,223)
+		
 	ElseIf
+		MsgBox(0,"","Ende")
 		Exit
 	EndIf
-MsgBox(0,"","Ende")
+MsgBox(0,"","Ready")
 Exit
 EndFunc
 	
@@ -406,11 +409,7 @@ Func copy()
  
 EndFunc
 
-Func paste()
-	
-	  Send("^v")
 
-EndFunc
 	
 		
 
