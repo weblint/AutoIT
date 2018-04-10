@@ -49,7 +49,8 @@ func GetACCESS()
 			$MyBox= msgbox(1,"","Hat der Klick geklappt?")
 			if $MyBox==1 then
 				msgbox(0,"","Pause: Bitte SAP auf die Servicenummer einstellen")
-				MouseClick("left",161,188)
+				SendKeepActive("Servicemeldung anzeigen: Servicemeldung PxC")
+				MouseClick("left",118,144)
 				sleep(500)
 				msgbox (0,"","Markieren")
 				Send ("{SHIFTDOWN}")
@@ -64,6 +65,7 @@ func GetACCESS()
 				; Wait for the Notepad become active - it is titled "Untitled - Notepad" on English systems
 				WinWaitActive("[CLASS:Notepad]")
 				copypaste()
+				SendKeepActive("")
 			Else
 				Exit
 			EndIf
