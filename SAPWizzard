@@ -1,0 +1,86 @@
+
+#include <SAPGUI.au3>
+#include <GUIConstantsEx.au3>
+#include <WindowsConstants.au3>
+#include <EditConstants.au3>
+$dll = DllOpen("user32.dll")
+HotKeySet("{ESC}", "Quit")
+
+$hGui = GUICreate("Simple SAP GUI scripting wizard replacement -  hit tool.", 600, 500)
+$iMemo = GUICtrlCreateEdit("Left or Right Click on SAP window item inspect. " & @CRLF &  _
+                           @CRLF & "Note, Gui scripting must be turned on in transaction RZ11" & _
+						   @CRLF & "You can also use any mouse button. Escape key to quit" _
+         , 2, 2, 600, 300 , $WS_VSCROLL) ; + $ES_READONLY)
+
+$iPath = GUICtrlCreateEdit("Control Path", 2, 320, 600, 100 , $WS_VSCROLL); + $ES_READONLY)
+
+$copy_btn = GUICtrlCreateButton("Copy Path to Clipboard", 0, 450)
+GUICtrlSetFont($iMemo, 9, 400, 0, "Courier New")
+GUISetState()
+
+;_SAPErrorHandlerRegister()
+
+;$oMyError = ObjEvent("AutoIt.Error","_SAPGUIErrFunc")    ; Initialize a COM error handler
+$oMyError = _SAPGUISetupErrHan()
+Dim $connected = false
+    
+While 1
+   ;$mousewhereone = MouseGetPos ()
+   ;$mousewhereonecalc = $mousewhereone[0] & " " & $mousewhereone[1]
+   ;Sleep(1000)
+   ;$mousewheretwo = MouseGetPos ()
+   ;$mousewheretwocalc = $mousewheretwo[0] & " " & $mousewheretwo[1]
+   ;If $mousewhereonecalc <> $mousewheretwocalc Then
+	;	 _SAPSessAttachActiveWindow()
+   ;EndIf
+
+    $mouseclick1 = _IsPressed("01", $dll) ;left
+    $mouseclick2 = _IsPressed("02", $dll) ;right
+    $mouseclick3 = _IsPressed("04", $dll) ;middle
+    $mouseclick4 = _IsPressed("05", $dll) ;x1
+    $mouseclick5 = _IsPressed("06", $dll) ;x2
+    ;If $mouseclick1 = TRUE  Then ; select SAP window
+        ;if _SAPGUIAttachActiveWindow() = true and $connected = false then 
+		;;	$connected = true 
+		;';    ;_SAPGUI_message_Set("")
+		;'	message_Display( "Now right click on control to discover " & @CRLF &  @CRLF & " connected ok!" & @CRLF, "no control selected")
+			
+			
+	    ;'endif
+   
+	if $mouseclick1 = TRUE OR $mouseclick2 = TRUE OR $mouseclick3 = TRUE OR $mouseclick4 = TRUE OR $mouseclick5 = TRUE	then
+		$mouse_pt = MouseGetPos()
+		_SAPGUIHighlightControlByPos($mouse_pt)  
+		
+		message_Display( )
+		
+    EndIf
+    $msg = GUIGetMsg()
+    Select
+            Case $msg = $GUI_EVENT_CLOSE
+                ExitLoop
+            Case $msg = $copy_btn
+                clipput($g_path)
+            
+    EndSelect
+WEnd ;""
+
+DllClose($dll)
+
+func message_display(  )
+	  $memo = _SAPGUI_message_Get()
+	  $path = _SAPGUI_path_Get()
+	  if _SAPGUI_Clicked( ) then
+		 GUICtrlSetData($iMemo, $memo ) 
+		 GUICtrlSetData($iPath, $path ) 
+	  
+	  endif
+endfunc
+Func Quit()
+	; clean up handlers
+	DllClose($dll)
+	Exit
+EndFunc
+
+
+ 
